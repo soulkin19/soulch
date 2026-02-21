@@ -135,7 +135,7 @@
         const txt = document.getElementById('content').value;
         if (!txt) return;
         const b = await get(ref(db, `blacklist/${myId}`));
-        if (b.exists()) { alert("投稿禁止されています"); return; }
+        if (b.exists()) { alert("あなたは書き込みが禁止されています。解除するにはXで@soul_kinmaniにリプしてください。"); return; }
         const now = Date.now();
         push(ref(db, `messages/${currentKey}`), { username: document.getElementById('username').value, text: txt, timestamp: now, uid: myId });
         update(ref(db, `boards/${currentKey}`), { lastUpdated: now });
