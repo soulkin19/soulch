@@ -26,7 +26,7 @@
         .post-item { margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .post-user { font-weight: bold; }
         .post-time { font-size: 12px; color: #888; margin-top: 2px; }
-        .post-img { max-width: 50px; width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 4px; border: 1px solid #eee; }
+        .post-img { max-width: 50px; width: 50%; height: auto; display: block; margin-top: 10px; border-radius: 4px; border: 1px solid #eee; }
         .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
         @media (max-width: 600px) {
             header { padding: 15px 10px; }
