@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -6,14 +5,16 @@
     <title>e ちゃんねる</title>
     <style>
         :root { --e-green: #5cb85c; --e-purple: #4b0082; --bg-light-green: #f4f9f4; }
-        html, body { margin: 0; padding: 0; background-color: var(--bg-light-green); min-height: 100vh; font-family: sans-serif; }
-        header { background-color: white; padding: 30px 20px; text-align: center; border-bottom: 1px solid #ddd; }
+        html { height: 100%; }
+        body { margin: 0; padding: 0; background-color: var(--bg-light-green); min-height: 100%; font-family: sans-serif; display: flex; flex-direction: column; }
+        header { background-color: white; padding: 30px 20px; text-align: center; border-bottom: 1px solid #ddd; flex-shrink: 0; }
         .logo-text { font-size: 40px; color: var(--e-green); font-weight: bold; margin: 0; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; width: 100%; box-sizing: border-box; flex: 1; }
         .btn-create { background-color: var(--e-green); color: white; border: none; padding: 10px 18px; border-radius: 4px; cursor: pointer; margin-bottom: 25px; font-weight: bold; }
         #board-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
-        .board-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 18px; cursor: pointer; }
-        .board-title { font-size: 18px; color: var(--e-purple); font-weight: bold; text-decoration: underline; margin-bottom: 8px; }
+        .board-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 18px; cursor: pointer; display: flex; flex-direction: column; }
+        .board-title { font-size: 18px; color: var(--e-purple); font-weight: bold; text-decoration: underline; margin-bottom: 5px; }
+        .board-info { font-size: 13px; color: #666; text-decoration: underline; margin-top: 2px; }
         #bbs-view { display: none; background: white; padding: 25px; border-radius: 4px; border: 1px solid #ddd; }
         .form-input, .form-textarea { width: 100%; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; box-sizing: border-box; border-radius: 3px; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 30px; }
@@ -62,7 +63,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-   const ADMIN_PASS = "ZGVsdGE0Mzc=";
+    const ADMIN_PASS = "ZGVsdGE0Mzc=";
 
     const getUserFingerprint = () => {
         let id = localStorage.getItem('user_fingerprint');
@@ -86,7 +87,15 @@
             const card = document.createElement('div');
             card.className = 'board-card';
             card.onclick = () => openBoard(b.key, b.title);
-            card.innerHTML = `<div class="board-title">${b.title}</div><div style="font-size:12px;color:#888;">更新: ${b.lastUpdated ? new Date(b.lastUpdated).toLocaleString() : 'なし'}</div>`;
+            
+            onValue(ref(db, `messages/${b.key}`), (mSnap) => {
+                const count = mSnap.exists() ? Object.keys(mSnap.val()).length : 0;
+                card.innerHTML = `
+                    <div class="board-title">${b.title}</div>
+                    <div class="board-info">投稿数: ${count}</div>
+                    <div class="board-info">更新: ${b.lastUpdated ? new Date(b.lastUpdated).toLocaleString() : 'なし'}</div>
+                `;
+            });
             listDiv.appendChild(card);
         });
     });
