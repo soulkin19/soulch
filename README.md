@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -26,6 +27,14 @@
         .post-user { font-weight: bold; }
         .post-time { font-size: 12px; color: #888; margin-top: 2px; }
         .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
+        @media (max-width: 600px) {
+            header { padding: 15px 10px; }
+            .logo-text { font-size: 30px; }
+            .container { padding: 10px; }
+            .form-input { margin-bottom: 8px; }
+            .form-textarea { height: 60px; margin-bottom: 8px; }
+            .btn-group { margin-bottom: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -142,3 +151,4 @@
     };
 </script>
 </body>
+</html>
