@@ -5,32 +5,22 @@
     <title>e ちゃんねる</title>
     <style>
         :root { --e-green: #5cb85c; --e-purple: #4b0082; --bg-light-green: #f4f9f4; }
-        html, body { 
-            margin: 0; padding: 0; 
-            background-color: var(--bg-light-green); 
-            min-height: 100vh; 
-            font-family: sans-serif; 
-        }
-
+        html, body { margin: 0; padding: 0; background-color: var(--bg-light-green); min-height: 100vh; font-family: sans-serif; }
         header { background-color: white; padding: 30px 20px; text-align: center; border-bottom: 1px solid #ddd; }
         .logo-text { font-size: 40px; color: var(--e-green); font-weight: bold; margin: 0; }
         .sub-title { font-size: 20px; color: var(--e-green); margin: 10px 0; font-weight: bold; }
-
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-
         .btn-create { background-color: var(--e-green); color: white; border: none; padding: 10px 15px; border-radius: 4px; font-size: 16px; cursor: pointer; margin-bottom: 20px; }
-
         .board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
         .board-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; cursor: pointer; }
         .board-title { font-size: 18px; color: var(--e-purple); font-weight: bold; text-decoration: underline; margin-bottom: 5px; }
-        .post-info { font-size: 13px; color: #666; text-decoration: 
+        .post-info { font-size: 13px; color: #666; text-decoration: underline; }
         #bbs-view { display: none; background: white; padding: 20px; border-radius: 4px; border: 1px solid #ddd; }
         .form-label { font-size: 16px; margin-bottom: 5px; display: block; }
         .form-input { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
         .form-textarea { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; height: 100px; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
         .btn-green { background-color: var(--e-green); color: white; border: none; padding: 8px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
-
         .post-item { margin-bottom: 20px; font-size: 16px; }
         .post-user { font-weight: bold; }
         .post-time { font-size: 12px; color: #888; margin-top: 2px; }
@@ -38,18 +28,15 @@
     </style>
 </head>
 <body>
-
 <header id="header-part">
     <h1 class="logo-text">e ちゃんねる</h1>
     <div class="sub-title">掲示板一覧</div>
     <div style="background:#e8f4f8; width:80px; height:80px; margin:10px auto; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:40px;">📺</div>
 </header>
-
 <div class="container" id="top-view">
     <button class="btn-create" onclick="createNewBoard()">掲示板を作成する</button>
     <div class="board-grid" id="board-list"></div>
 </div>
-
 <div class="container" id="bbs-view">
     <label class="form-label">名前:</label>
     <input type="text" id="username" class="form-input" value="名無しさん">
@@ -61,11 +48,9 @@
     </div>
     <div id="message-container"></div>
 </div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded, onValue, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
     const firebaseConfig = {
         apiKey: "AIzaSyCwhHspaG94goiCIjVj3h-Un5pBK3JTjMU",
         authDomain: "soulkin-aa3b7.firebaseapp.com",
@@ -75,11 +60,9 @@
         messagingSenderId: "358331064206",
         appId: "1:358331064206:web:d7760ea0919259418a4edf"
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const ADMIN_PASS = "ZGVsdGE0Mzc="; 
-
     const getFp = () => {
         let id = localStorage.getItem('fp');
         if (!id) { id = 'fp_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('fp', id); }
@@ -87,7 +70,6 @@
     };
     const myId = getFp();
     let currentKey = '';
-
     onValue(ref(db, 'boards'), (snap) => {
         const list = document.getElementById('board-list');
         list.innerHTML = '';
@@ -105,12 +87,10 @@
             list.appendChild(card);
         });
     });
-
     window.createNewBoard = () => {
         const t = prompt("掲示板名:");
         if (t) push(ref(db, 'boards'), { title: t, lastUpdated: Date.now() });
     };
-
     window.openBoard = (key, title) => {
         currentKey = key;
         document.getElementById('top-view').style.display = 'none';
@@ -128,7 +108,6 @@
             container.prepend(div);
         });
     };
-
     document.getElementById('send-btn').onclick = async () => {
         const txt = document.getElementById('content').value;
         if (!txt) return;
@@ -139,7 +118,6 @@
         update(ref(db, `boards/${currentKey}`), { lastUpdated: now });
         document.getElementById('content').value = '';
     };
-
     window.admin = (mKey, uId) => {
         const p = prompt("パスワード:");
         if (p && btoa(p) === ADMIN_PASS) {
