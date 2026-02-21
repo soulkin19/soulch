@@ -1,4 +1,3 @@
-<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +9,7 @@
         .logo-text { font-size: 40px; color: var(--e-green); font-weight: bold; margin: 0; }
         .sub-title { font-size: 20px; color: var(--e-green); margin: 10px 0; font-weight: bold; }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-        .btn-create { background-color: var(--e-green); color: white; border: none; padding: 10px 15px; border-radius: 4px; font-size: 16px; cursor: pointer; margin-bottom: 20px; }
+        .btn-create { background-color: var(--e-green); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-size: 16px; cursor: pointer; margin-bottom: 20px; }
         .board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
         .board-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; cursor: pointer; }
         .board-title { font-size: 18px; color: var(--e-purple); font-weight: bold; text-decoration: underline; margin-bottom: 5px; }
@@ -132,3 +131,4 @@
 </script>
 </body>
 </html>
+](https://soulkin19.github.io/soulch/)
