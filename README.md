@@ -14,7 +14,7 @@
         .board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
         .board-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; cursor: pointer; }
         .board-title { font-size: 18px; color: var(--e-purple); font-weight: bold; text-decoration: underline; margin-bottom: 5px; }
-        .post-info { font-size: 13px; color: #666; text-decoration: underline; }
+        .post-info { font-size: 13px; color: #666; text-decoration: underline; margin-top: 2px; }
         #bbs-view { display: none; background: white; padding: 20px; border-radius: 4px; border: 1px solid #ddd; }
         .form-label { font-size: 16px; margin-bottom: 5px; display: block; }
         .form-input { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
@@ -82,7 +82,10 @@
             card.onclick = () => openBoard(b.key, b.title);
             onValue(ref(db, `messages/${b.key}`), (mSnap) => {
                 const count = mSnap.exists() ? Object.keys(mSnap.val()).length : 0;
-                card.innerHTML = `<div class="board-title">${b.title}</div><div class="post-info">投稿数: ${count}</div>`;
+                const lastTime = b.lastUpdated ? new Date(b.lastUpdated).toLocaleString() : 'なし';
+                card.innerHTML = `<div class="board-title">${b.title}</div>
+                                  <div class="post-info">投稿数: ${count}</div>
+                                  <div class="post-info">最終投稿: ${lastTime}</div>`;
             });
             list.appendChild(card);
         });
