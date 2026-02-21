@@ -48,7 +48,7 @@
 </div>
 <div class="container" id="bbs-view">
     <label class="form-label">名前:</label>
-    <input type="text" id="username" class="form-input" value="名無しさん">
+    <input type="text" id="username" class="form-input" value="">
     <label class="form-label">内容:</label>
     <textarea id="content" class="form-textarea"></textarea>
     <div class="btn-group">
