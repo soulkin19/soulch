@@ -3,168 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>e ちゃんねる - 掲示板一覧</title>
+    <title>e ちゃんねる</title>
     <style>
         :root {
             --e-green: #5cb85c;
-            --e-green-hover: #4cae4c;
             --e-purple: #4b0082;
-            --bg-gray: #f4f7f4;
-            --card-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --bg-light-green: #f4f9f4; /* 薄緑の背景 */
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: var(--bg-light-green); /* 背景を下に伸ばす */
         }
         body {
-            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif;
-            background-color: var(--bg-gray);
-            margin: 0;
+            font-family: sans-serif;
             color: #333;
-            line-height: 1.6;
         }
 
         /* ヘッダー */
         header {
-            background: white;
-            padding: 40px 20px;
             text-align: center;
-            border-bottom: 1px solid #ddd;
+            padding: 40px 20px;
+            background-color: white;
         }
-        .logo-text {
-            font-size: 3rem;
-            color: var(--e-green);
-            font-weight: bold;
-            margin: 0;
-            letter-spacing: 3px;
-        }
-        .sub-title {
-            font-size: 1.5rem;
-            color: var(--e-green);
-            margin: 10px 0;
-        }
-        .tv-icon-box {
-            width: 90px;
-            height: 90px;
-            background-color: #e8f4f8;
-            margin: 15px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            font-size: 50px;
-            border: 1px solid #cde;
-        }
+        .logo-text { font-size: 42px; color: var(--e-green); font-weight: bold; margin: 0; }
+        .sub-title { font-size: 20px; color: var(--e-green); margin: 10px 0; font-weight: bold; }
+        .tv-icon { width: 80px; height: 80px; margin: 10px auto; background-color: #d9edf7; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-size: 40px; }
 
         .container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
-            padding: 30px 20px;
-        }
-
-        /* 掲示板作成ボタン */
-        .btn-create {
-            background-color: var(--e-green);
-            color: white;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 6px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 30px;
-            transition: 0.2s;
-        }
-        .btn-create:hover { background-color: var(--e-green-hover); }
-
-        /* スレッドカード */
-        .board-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .board-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid #eee;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .board-card:hover { transform: translateY(-5px); border-color: var(--e-green); }
-        .board-title {
-            font-size: 1.25rem;
-            color: var(--e-purple);
-            font-weight: bold;
-            margin-bottom: 12px;
-            text-decoration: underline;
-            display: block;
-        }
-        .post-count { color: #888; font-size: 0.95rem; }
-
-        /* 掲示板内部表示 */
-        #bbs-view { display: none; background: white; border-radius: 15px; padding: 30px; box-shadow: var(--card-shadow); }
-        .back-link { color: var(--e-green); cursor: pointer; font-weight: bold; margin-bottom: 25px; display: inline-block; }
-        
-        .message-item {
             padding: 20px;
-            border-bottom: 1px solid #f0f0f0;
-            position: relative;
-        }
-        .message-header {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .user-name { color: #2e7d32; font-weight: bold; }
-        .message-body { font-size: 1.05rem; white-space: pre-wrap; color: #444; }
-        
-        .admin-delete {
-            color: #ff4444;
-            cursor: pointer;
-            font-size: 0.8rem;
-            background: #fff0f0;
-            border: 1px solid #ffcccc;
-            padding: 2px 8px;
-            border-radius: 4px;
+            min-height: 100%;
         }
 
-        /* フォーム改善 */
-        .form-area {
-            margin-top: 40px;
-            padding: 30px;
-            background: #fdfdfd;
-            border: 2px solid var(--e-green);
-            border-radius: 12px;
-        }
-        .form-label { font-weight: bold; margin-bottom: 5px; display: block; color: #555; }
-        .form-area input, .form-area textarea {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 1rem;
-        }
-        .btn-post {
-            background-color: var(--e-green);
-            color: white;
-            border: none;
-            padding: 15px;
-            width: 100%;
-            border-radius: 8px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        /* スレッド一覧 */
+        .btn-create { background-color: var(--e-green); color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; cursor: pointer; margin-bottom: 20px; }
+        .board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .board-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; cursor: pointer; }
+        .board-title { font-size: 18px; color: var(--e-purple); font-weight: bold; text-decoration: underline; margin-bottom: 5px; display: block; }
+        .post-count { font-size: 13px; color: #666; text-decoration: underline; }
+
+        /* 投稿画面（画像IMG_0084を再現） */
+        #bbs-view { display: none; background: white; padding: 20px; border-radius: 8px; }
+        .form-row { margin-bottom: 15px; }
+        .form-row label { display: block; font-size: 14px; margin-bottom: 5px; }
+        .form-row input, .form-row textarea { width: 100%; border: 1px solid #ccc; padding: 8px; border-radius: 3px; box-sizing: border-box; }
+        .button-group { display: flex; gap: 10px; margin-bottom: 30px; }
+        .btn-submit { background-color: var(--e-green); color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .btn-back { background-color: var(--e-green); color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+
+        /* 投稿リスト */
+        .post-item { margin-bottom: 20px; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .post-header { font-weight: bold; margin-bottom: 3px; }
+        .post-header span { font-weight: normal; }
+        .post-time { font-size: 12px; color: #666; margin-bottom: 5px; }
+        .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
     </style>
 </head>
 <body>
 
-<header>
+<header id="header-area">
     <h1 class="logo-text">e ちゃんねる</h1>
     <p class="sub-title">掲示板一覧</p>
-    <div class="tv-icon-box">📺</div>
+    <div class="tv-icon">📺</div>
 </header>
 
 <div class="container" id="top-view">
@@ -173,17 +75,20 @@
 </div>
 
 <div class="container" id="bbs-view">
-    <span class="back-link" onclick="showTop()">← 一覧に戻る</span>
-    <h2 id="current-board-title" style="color: var(--e-purple); margin-top: 0;"></h2>
-    <div id="message-container"></div>
-
-    <div class="form-area">
-        <label class="form-label">名前</label>
+    <div class="form-row">
+        <label>名前:</label>
         <input type="text" id="username" value="名無しさん">
-        <label class="form-label">メッセージ</label>
-        <textarea id="content" placeholder="ここに内容を書いてください" rows="5"></textarea>
-        <button class="btn-post" id="send-btn">書き込む</button>
     </div>
+    <div class="form-row">
+        <label>内容:</label>
+        <textarea id="content" rows="4"></textarea>
+    </div>
+    <div class="button-group">
+        <button class="btn-submit" id="send-btn">投稿</button>
+        <button class="btn-back" onclick="showTop()">戻る</button>
+    </div>
+
+    <div id="message-container"></div>
 </div>
 
 <script type="module">
@@ -202,16 +107,20 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const ADMIN_PASS_HASH = "YWRtaW4xMjM="; // admin123
+    const ADMIN_PASS_HASH = "YWRtaW4xMjM="; 
     let currentBoardKey = '';
 
-    // --- 掲示板作成 ---
+    // 時刻フォーマット関数
+    const formatDate = (timestamp) => {
+        const d = new Date(timestamp);
+        return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
+    };
+
     window.createNewBoard = () => {
-        const title = prompt("新しい掲示板の名前は？");
+        const title = prompt("掲示板の名前を入力:");
         if (title) push(ref(db, 'boards'), { title: title });
     };
 
-    // --- 一覧読み込み ---
     onChildAdded(ref(db, 'boards'), (snapshot) => {
         const board = snapshot.val();
         const key = snapshot.key;
@@ -226,59 +135,49 @@
         document.getElementById('board-list').appendChild(card);
     });
 
-    // --- 掲示板を開く ---
     window.openBoard = (key, title) => {
         currentBoardKey = key;
         document.getElementById('top-view').style.display = 'none';
+        document.getElementById('header-area').style.display = 'none';
         document.getElementById('bbs-view').style.display = 'block';
-        document.getElementById('current-board-title').innerText = title;
         const container = document.getElementById('message-container');
         container.innerHTML = '';
 
         onChildAdded(ref(db, `messages/${key}`), (snapshot) => {
             const msg = snapshot.val();
             const msgKey = snapshot.key;
+            const timeStr = msg.timestamp ? formatDate(msg.timestamp) : "時刻不明";
             const div = document.createElement('div');
-            div.className = 'message-item';
+            div.className = 'post-item';
             div.id = `msg-${msgKey}`;
             div.innerHTML = `
-                <div class="message-header">
-                    <span>投稿者: <span class="user-name">${msg.username}</span></span>
-                    <span class="admin-delete" onclick="event.stopPropagation(); adminDelete('${msgKey}')">削除</span>
-                </div>
-                <div class="message-body">${msg.text}</div>
+                <div class="post-header">${msg.username}: <span>${msg.text}</span></div>
+                <div class="post-time">${timeStr} <span class="admin-del" onclick="adminDelete('${msgKey}')">[削除]</span></div>
             `;
-            container.appendChild(div);
+            container.prepend(div); // 新しい投稿を上に
         });
     };
 
-    // --- 削除機能 ---
     window.adminDelete = (msgKey) => {
-        const pass = prompt("管理者パスワードを入力してください");
+        const pass = prompt("管理者パスワード:");
         if (pass && btoa(pass) === ADMIN_PASS_HASH) {
-            remove(ref(db, `messages/${currentBoardKey}/${msgKey}`))
-                .then(() => {
-                    document.getElementById(`msg-${msgKey}`).remove();
-                    alert("削除しました");
-                });
-        } else {
-            alert("パスワードが違います");
+            remove(ref(db, `messages/${currentBoardKey}/${msgKey}`)).then(() => {
+                document.getElementById(`msg-${msgKey}`).remove();
+            });
         }
     };
 
     window.showTop = () => {
-        document.getElementById('top-view').style.display = 'block';
-        document.getElementById('bbs-view').style.display = 'none';
+        location.reload(); 
     };
 
-    // --- 書き込み ---
     document.getElementById('send-btn').addEventListener('click', () => {
         const text = document.getElementById('content').value;
         if (!text) return;
         push(ref(db, `messages/${currentBoardKey}`), {
             username: document.getElementById('username').value || "名無しさん",
             text: text,
-            timestamp: serverTimestamp()
+            timestamp: Date.now()
         });
         document.getElementById('content').value = '';
     });
