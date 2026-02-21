@@ -20,19 +20,20 @@
         .form-label { font-size: 16px; margin-bottom: 5px; display: block; }
         .form-input { width: 150px; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
         .form-textarea { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; box-sizing: border-box; height: 100px; }
-        .img-preview { max-width: 200px; max-height: 200px; display: block; margin-bottom: 10px; border: 1px dashed #ccc; }
+        .img-preview { max-width: 150px; max-height: 150px; display: block; margin-bottom: 10px; border: 1px dashed #ccc; border-radius: 4px; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
         .btn-green { background-color: var(--e-green); color: white; border: none; padding: 8px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
         .post-item { margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .post-user { font-weight: bold; }
         .post-time { font-size: 12px; color: #888; margin-top: 2px; }
-        .post-img { max-width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 4px; }
+        .post-img { max-width: 300px; width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 4px; border: 1px solid #eee; }
         .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
         @media (max-width: 600px) {
             header { padding: 15px 10px; }
             .logo-text { font-size: 30px; }
             .container { padding: 10px; }
             .form-textarea { height: 60px; }
+            .post-img { max-width: 200px; }
         }
     </style>
 </head>
@@ -55,7 +56,7 @@
     <img id="preview-area" class="img-preview" style="display:none;">
     <div class="btn-group">
         <button class="btn-green" id="send-btn">投稿</button>
-        <button class="btn-green" onclick="document.getElementById('image-input').click()">画像選択</button>
+        <button class="btn-green" onclick="document.getElementById('image-input').click()">画像</button>
         <button class="btn-green" onclick="location.reload()">戻る</button>
     </div>
     <div id="message-container"></div>
@@ -94,14 +95,14 @@
                 const canvas = document.createElement('canvas');
                 let width = img.width;
                 let height = img.height;
-                const max = 800;
+                const max = 500;
                 if (width > height) { if (width > max) { height *= max / width; width = max; } }
                 else { if (height > max) { width *= max / height; height = max; } }
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                compressedImageData = canvas.toDataURL('image/jpeg', 0.7);
+                compressedImageData = canvas.toDataURL('image/jpeg', 0.6);
                 document.getElementById('preview-area').src = compressedImageData;
                 document.getElementById('preview-area').style.display = 'block';
             };
