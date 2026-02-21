@@ -3,66 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soulkin e-Board</title>
+    <title>eちゃんねる風 掲示板</title>
     <style>
-        /* eちゃんねる風デザイン */
-        body { background-color: #efefef; color: #000; font-family: "MS PGothic", "IPAMonaPGothic", sans-serif; margin: 0; display: flex; height: 100vh; }
+        :root { --main-green: #5cb85c; --text-purple: #4b0082; --bg-gray: #f9f9f9; }
+        body { font-family: sans-serif; background-color: white; margin: 0; color: #333; }
         
-        /* サイドバー */
-        aside { width: 220px; background: #e0e0e0; border-right: 2px solid #ccc; display: flex; flex-direction: column; font-size: 14px; }
-        .side-header { background: #666; color: white; padding: 10px; font-weight: bold; text-align: center; }
-        #thread-list { flex: 1; overflow-y: auto; list-style: none; padding: 5px; margin: 0; }
-        #thread-list li { padding: 8px; border-bottom: 1px solid #ccc; cursor: pointer; color: blue; text-decoration: underline; }
-        #thread-list li:hover { background: #d0d0d0; }
-        #thread-list li.active { background: #fff; color: #ff0000; font-weight: bold; text-decoration: none; }
-        
-        /* メイン */
-        main { flex: 1; display: flex; flex-direction: column; background: #fff; }
-        header { background: #f5f5f5; padding: 10px; border-bottom: 1px solid #ccc; font-size: 1.5rem; color: #ff0000; font-weight: bold; }
-        
-        #messages { flex: 1; overflow-y: auto; padding: 20px; }
-        .msg { margin-bottom: 1.5rem; border-bottom: 1px dashed #ccc; padding-bottom: 10px; line-height: 1.4; }
-        .msg-info { font-size: 0.9rem; color: #222; margin-bottom: 5px; }
-        .res-num { color: #ff0000; font-weight: bold; margin-right: 5px; }
-        .user-name { color: #228b22; font-weight: bold; }
-        .user-id { color: #666; font-size: 0.8rem; }
-        .msg-text { margin-top: 5px; white-space: pre-wrap; word-break: break-all; }
-        .delete-btn { font-size: 10px; color: #aaa; cursor: pointer; border: none; background: none; margin-left: 10px; }
+        /* ヘッダー */
+        header { padding: 20px; text-align: right; max-width: 1000px; margin: 0 auto; }
+        .logo-area { display: flex; flex-direction: column; align-items: flex-end; }
+        .logo-text { font-size: 2.5rem; color: var(--main-green); font-weight: bold; margin: 0; }
+        .sub-title { font-size: 1.2rem; color: var(--main-green); margin-top: 5px; }
 
-        /* 書き込みエリア */
-        .form-area { background: #f5f5f5; border-top: 2px solid #ccc; padding: 15px; }
-        .form-area table { width: 100%; max-width: 600px; }
-        .form-area input, .form-area textarea { border: 1px solid #aaa; padding: 5px; font-family: inherit; }
-        .form-area button { padding: 10px 20px; background: #eee; cursor: pointer; border: 1px solid #aaa; font-weight: bold; }
+        /* コンテンツエリア */
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        
+        /* 「掲示板を作成する」ボタン */
+        .btn-create { background-color: var(--main-green); color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 1rem; cursor: pointer; margin-bottom: 20px; display: inline-block; }
+
+        /* スレッド一覧（カードレイアウト） */
+        .board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .board-card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; }
+        .board-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .board-title { font-size: 1.2rem; color: var(--text-purple); font-weight: bold; margin-bottom: 10px; display: block; text-decoration: none; }
+        .post-count { font-size: 0.9rem; color: #666; }
+
+        /* 掲示板内部（非表示時は隠す） */
+        #bbs-view { display: none; }
+        .back-btn { margin-bottom: 20px; cursor: pointer; color: var(--main-green); }
+        .message { border-bottom: 1px solid #eee; padding: 10px 0; }
+
+        /* 入力フォーム */
+        .form-area { margin-top: 30px; border-top: 2px solid var(--main-green); padding-top: 20px; }
+        .form-area input, .form-area textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .form-area button { background-color: var(--main-green); color: white; border: none; padding: 10px 20px; border-radius: 4px; width: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<aside>
-    <div class="side-header">スレッド一覧</div>
-    <ul id="thread-list"></ul>
-    <div style="padding: 10px; border-top: 1px solid #ccc;">
-        <input type="text" id="new-thread-name" placeholder="新スレ名" style="width: 100px;">
-        <button id="create-thread">作成</button>
+<header>
+    <div class="logo-area">
+        <h1 class="logo-text">e ちゃんねる</h1>
+        <div class="sub-title">掲示板一覧</div>
     </div>
-</aside>
+</header>
 
-<main>
-    <header id="current-thread-title">eちゃんねる風 掲示板</header>
+<div class="container" id="top-view">
+    <button class="btn-create" onclick="createNewBoard()">掲示板を作成する</button>
+    <div class="board-grid" id="board-list">
+        </div>
+</div>
+
+<div class="container" id="bbs-view">
+    <div class="back-btn" onclick="showTop()">← 掲示板一覧に戻る</div>
+    <h2 id="current-board-title" style="color: var(--text-purple);"></h2>
     <div id="messages"></div>
     
     <div class="form-area">
-        <table>
-            <tr><td>名前:</td><td><input type="text" id="username" value="名無しさん" style="width: 200px;"></td></tr>
-            <tr><td>内容:</td><td><textarea id="content" style="width: 90%; height: 80px;"></textarea></td></tr>
-            <tr><td></td><td><button id="send">書き込む</button></td></tr>
-        </table>
+        <input type="text" id="username" placeholder="名前" value="名無しさん">
+        <textarea id="content" placeholder="内容を入力してください" rows="4"></textarea>
+        <button id="send">書き込む</button>
     </div>
-</main>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded, onChildRemoved, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onChildAdded, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCwhHspaG94goiCIjVj3h-Un5pBK3JTjMU",
@@ -76,92 +81,72 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const MASK = "YWRtaW4xMjM="; // admin123
+    let currentBoardKey = '';
 
-    let currentThreadKey = '';
-    let resCount = 0;
-
-    // --- ID生成 (簡易版: 日替わり) ---
-    const generateID = () => {
-        const date = new Date().toLocaleDateString();
-        return btoa(date).substring(0, 8);
-    };
-
-    // --- スレッド管理 ---
-    const threadListRef = ref(db, 'thread_list');
-    onChildAdded(threadListRef, (data) => {
-        const li = document.createElement('li');
-        li.innerText = data.val().name;
-        li.id = `thread-${data.key}`;
-        li.onclick = () => selectThread(data.key, data.val().name);
-        document.getElementById('thread-list').appendChild(li);
-    });
-
-    document.getElementById('create-thread').addEventListener('click', () => {
-        const name = document.getElementById('new-thread-name').value;
-        if(!name) return;
-        push(threadListRef, { name: name });
-        document.getElementById('new-thread-name').value = '';
-    });
-
-    function selectThread(key, name) {
-        currentThreadKey = key;
-        resCount = 0;
-        document.getElementById('current-thread-title').innerText = name;
-        document.getElementById('messages').innerHTML = '';
-        document.querySelectorAll('#thread-list li').forEach(el => el.classList.remove('active'));
-        document.getElementById(`thread-${key}`).classList.add('active');
-        loadMessages(key);
-    }
-
-    const loadMessages = (threadKey) => {
-        const dbRef = ref(db, `messages/${threadKey}`);
-        onChildAdded(dbRef, (data) => {
-            if(currentThreadKey !== threadKey) return;
-            resCount++;
-            const msg = data.val();
-            const div = document.createElement("div");
-            div.className = "msg";
-            div.id = `msg-${data.key}`;
-            div.innerHTML = `
-                <div class="msg-info">
-                    <span class="res-num">${resCount}</span>
-                    名前：<span class="user-name">${msg.username}</span> 
-                    ID:<span class="user-id">${msg.id}</span>
-                    <button class="delete-btn" onclick="window.deleteMsg('${data.key}')">[削除]</button>
-                </div>
-                <div class="msg-text">${msg.text}</div>
-            `;
-            document.getElementById("messages").appendChild(div);
-            document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
-        });
-        onChildRemoved(dbRef, (data) => {
-            const el = document.getElementById(`msg-${data.key}`);
-            if(el) el.remove();
-        });
-    };
-
-    // --- 投稿 ---
-    document.getElementById("send").addEventListener("click", () => {
-        if(!currentThreadKey) return alert("スレを選択してください");
-        const content = document.getElementById("content").value;
-        if(!content) return;
-
-        push(ref(db, `messages/${currentThreadKey}`), {
-            username: document.getElementById("username").value || "名無しさん",
-            text: content,
-            id: generateID(),
-            timestamp: serverTimestamp()
-        });
-        document.getElementById("content").value = "";
-    });
-
-    window.deleteMsg = (msgKey) => {
-        const psw = prompt("管理者パス");
-        if(psw && btoa(psw) === MASK) {
-            remove(ref(db, `messages/${currentThreadKey}/${msgKey}`));
+    // --- 掲示板作成 ---
+    window.createNewBoard = () => {
+        const title = prompt("新しい掲示板の名前を入力してください");
+        if(title) {
+            push(ref(db, 'boards'), { title: title, postCount: 0 });
         }
     };
+
+    // --- 一覧表示 ---
+    onChildAdded(ref(db, 'boards'), (snapshot) => {
+        const board = snapshot.val();
+        const key = snapshot.key;
+        
+        const card = document.createElement('div');
+        card.className = 'board-card';
+        card.onclick = () => openBoard(key, board.title);
+        
+        // 投稿数をリアルタイム監視
+        const countRef = ref(db, `messages/${key}`);
+        onValue(countRef, (msgSnapshot) => {
+            const count = msgSnapshot.exists() ? Object.keys(msgSnapshot.val()).length : 0;
+            card.innerHTML = `
+                <div class="board-title">${board.title}</div>
+                <div class="post-count">投稿数：${count}</div>
+            `;
+        });
+        
+        document.getElementById('board-list').appendChild(card);
+    });
+
+    // --- 掲示板を開く ---
+    window.openBoard = (key, title) => {
+        currentBoardKey = key;
+        document.getElementById('top-view').style.display = 'none';
+        document.getElementById('bbs-view').style.display = 'block';
+        document.getElementById('current-board-title').innerText = title;
+        document.getElementById('messages').innerHTML = '';
+        
+        const msgRef = ref(db, `messages/${key}`);
+        onChildAdded(msgRef, (snapshot) => {
+            const msg = snapshot.val();
+            const div = document.createElement('div');
+            div.className = 'message';
+            div.innerHTML = `<strong>${msg.username}</strong>: ${msg.text}`;
+            document.getElementById('messages').appendChild(div);
+        });
+    };
+
+    window.showTop = () => {
+        document.getElementById('top-view').style.display = 'block';
+        document.getElementById('bbs-view').style.display = 'none';
+    };
+
+    // --- 書き込み ---
+    document.getElementById('send').addEventListener('click', () => {
+        const text = document.getElementById('content').value;
+        if(!text) return;
+        push(ref(db, `messages/${currentBoardKey}`), {
+            username: document.getElementById('username').value || "名無しさん",
+            text: text,
+            timestamp: serverTimestamp()
+        });
+        document.getElementById('content').value = '';
+    });
 </script>
 </body>
 </html>
