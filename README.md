@@ -1,3 +1,4 @@
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,11 +10,12 @@
         .logo-text { font-size: 40px; color: var(--e-green); font-weight: bold; margin: 0; }
         .sub-title { font-size: 20px; color: var(--e-green); margin: 10px 0; font-weight: bold; }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-        .btn-create { background-color: var(--e-green); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-size: 16px; cursor: pointer; margin-bottom: 20px; }
+        .btn-create { background-color: var(--e-green); color: white; border: none; padding: 10px 15px; border-radius: 4px; font-size: 16px; cursor: pointer; margin-bottom: 20px; }
         .board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
-        .board-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; cursor: pointer; }
-        .board-title { font-size: 18px; color: var(--e-purple); font-weight: bold; text-decoration: underline; margin-bottom: 5px; }
+        .board-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; cursor: pointer; position: relative; }
+        .board-title { font-size: 18px; color: var(--e-purple); font-weight: bold; text-decoration: underline; margin-bottom: 5px; padding-right: 20px; }
         .post-info { font-size: 13px; color: #666; text-decoration: underline; margin-top: 2px; }
+        .board-del { position: absolute; top: 10px; right: 10px; font-size: 14px; color: #ccc; cursor: pointer; }
         #bbs-view { display: none; background: white; padding: 20px; border-radius: 4px; border: 1px solid #ddd; }
         .form-label { font-size: 16px; margin-bottom: 5px; display: block; }
         .form-input { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
@@ -78,17 +80,27 @@
         boards.forEach(b => {
             const card = document.createElement('div');
             card.className = 'board-card';
-            card.onclick = () => openBoard(b.key, b.title);
+            card.onclick = (e) => { if(e.target.className !== 'board-del') openBoard(b.key, b.title); };
             onValue(ref(db, `messages/${b.key}`), (mSnap) => {
                 const count = mSnap.exists() ? Object.keys(mSnap.val()).length : 0;
                 const lastTime = b.lastUpdated ? new Date(b.lastUpdated).toLocaleString() : 'なし';
-                card.innerHTML = `<div class="board-title">${b.title}</div>
+                card.innerHTML = `<div class="board-del" onclick="deleteBoard('${b.key}')">×</div>
+                                  <div class="board-title">${b.title}</div>
                                   <div class="post-info">投稿数: ${count}</div>
                                   <div class="post-info">最終投稿: ${lastTime}</div>`;
             });
             list.appendChild(card);
         });
     });
+    window.deleteBoard = (key) => {
+        const p = prompt("スレッド削除用パスワード:");
+        if (p && btoa(p) === ADMIN_PASS) {
+            if(confirm("このスレッドと全ての投稿を完全に削除しますか？")) {
+                remove(ref(db, `boards/${key}`));
+                remove(ref(db, `messages/${key}`));
+            }
+        }
+    };
     window.createNewBoard = () => {
         const t = prompt("掲示板名:");
         if (t) push(ref(db, 'boards'), { title: t, lastUpdated: Date.now() });
