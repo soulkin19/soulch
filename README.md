@@ -18,21 +18,21 @@
         .board-del { position: absolute; top: 10px; right: 10px; font-size: 14px; color: #ccc; cursor: pointer; }
         #bbs-view { display: none; background: white; padding: 20px; border-radius: 4px; border: 1px solid #ddd; }
         .form-label { font-size: 16px; margin-bottom: 5px; display: block; }
-        .form-input { width: 50%; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
-        .form-textarea { width: 50%; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; height: 40px; }
-        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        .form-input { width: 150px; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
+        .form-textarea { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; box-sizing: border-box; height: 100px; }
+        .img-preview { max-width: 200px; max-height: 200px; display: block; margin-bottom: 10px; border: 1px dashed #ccc; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
         .btn-green { background-color: var(--e-green); color: white; border: none; padding: 8px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
-        .post-item { margin-bottom: 20px; font-size: 16px; }
+        .post-item { margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .post-user { font-weight: bold; }
         .post-time { font-size: 12px; color: #888; margin-top: 2px; }
+        .post-img { max-width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 4px; }
         .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
         @media (max-width: 600px) {
             header { padding: 15px 10px; }
             .logo-text { font-size: 30px; }
             .container { padding: 10px; }
-            .form-input { margin-bottom: 8px; }
-            .form-textarea { height: 60px; margin-bottom: 8px; }
-            .btn-group { margin-bottom: 15px; }
+            .form-textarea { height: 60px; }
         }
     </style>
 </head>
@@ -48,11 +48,14 @@
 </div>
 <div class="container" id="bbs-view">
     <label class="form-label">名前:</label>
-    <input type="text" id="username" class="form-input" value="">
+    <input type="text" id="username" class="form-input" value="名無しさん">
     <label class="form-label">内容:</label>
     <textarea id="content" class="form-textarea"></textarea>
+    <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="previewImage(this)">
+    <img id="preview-area" class="img-preview" style="display:none;">
     <div class="btn-group">
         <button class="btn-green" id="send-btn">投稿</button>
+        <button class="btn-green" onclick="document.getElementById('image-input').click()">画像選択</button>
         <button class="btn-green" onclick="location.reload()">戻る</button>
     </div>
     <div id="message-container"></div>
@@ -79,6 +82,34 @@
     };
     const myId = getFp();
     let currentKey = '';
+    let compressedImageData = '';
+
+    window.previewImage = (input) => {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const max = 800;
+                if (width > height) { if (width > max) { height *= max / width; width = max; } }
+                else { if (height > max) { width *= max / height; height = max; } }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                compressedImageData = canvas.toDataURL('image/jpeg', 0.7);
+                document.getElementById('preview-area').src = compressedImageData;
+                document.getElementById('preview-area').style.display = 'block';
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
     onValue(ref(db, 'boards'), (snap) => {
         const list = document.getElementById('board-list');
         list.innerHTML = '';
@@ -101,9 +132,9 @@
         });
     });
     window.deleteBoard = (key) => {
-        const p = prompt("スレッド削除用パスワード:");
+        const p = prompt("削除パスワード:");
         if (p && btoa(p) === ADMIN_PASS) {
-            if(confirm("このスレッドと全ての投稿を完全に削除しますか？")) {
+            if(confirm("スレッドを完全に削除しますか？")) {
                 remove(ref(db, `boards/${key}`));
                 remove(ref(db, `messages/${key}`));
             }
@@ -126,19 +157,28 @@
             div.className = 'post-item';
             div.id = `m-${s.key}`;
             div.innerHTML = `<div><span class="post-user">${m.username}</span>: ${m.text}</div>
+                ${m.image ? `<img src="${m.image}" class="post-img">` : ''}
                 <div class="post-time">${new Date(m.timestamp).toLocaleString()} <span class="admin-del" onclick="admin('${s.key}', '${m.uid}')">[管理]</span></div>`;
             container.prepend(div);
         });
     };
     document.getElementById('send-btn').onclick = async () => {
         const txt = document.getElementById('content').value;
-        if (!txt) return;
+        if (!txt && !compressedImageData) return;
         const b = await get(ref(db, `blacklist/${myId}`));
-        if (b.exists()) { alert("あなたは書き込みが禁止されています。解除するにはXで@soul_kinmaniにリプしてください。"); return; }
+        if (b.exists()) { alert("投稿禁止されています"); return; }
         const now = Date.now();
-        push(ref(db, `messages/${currentKey}`), { username: document.getElementById('username').value, text: txt, timestamp: now, uid: myId });
+        push(ref(db, `messages/${currentKey}`), { 
+            username: document.getElementById('username').value, 
+            text: txt, 
+            timestamp: now, 
+            uid: myId,
+            image: compressedImageData 
+        });
         update(ref(db, `boards/${currentKey}`), { lastUpdated: now });
         document.getElementById('content').value = '';
+        document.getElementById('preview-area').style.display = 'none';
+        compressedImageData = '';
     };
     window.admin = (mKey, uId) => {
         const p = prompt("パスワード:");
@@ -150,4 +190,3 @@
     };
 </script>
 </body>
-</html>
