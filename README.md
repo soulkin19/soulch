@@ -145,10 +145,7 @@
     window.createNewBoard = async () => {
         if (await checkBan()) return;
         const t = prompt("掲示板名:");
-        if (t) {
-            const ip = await getIp();
-            await addDoc(collection(db, 'boards'), { title: t, lastUpdated: Date.now(), ownerId: myId, ip: ip });
-        }
+        
     };
 
     window.openBoard = (id, title) => {
@@ -180,7 +177,7 @@
         const now = Date.now();
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
             username: document.getElementById('username').value,
-            text: txt, timestamp: now, uid: myId, imageUrl: compressedImageData, ip: ip
+            text: txt, timestamp: now, uid: myId, imageUrl: compressedImageData,
         });
         await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
         document.getElementById('content').value = '';
