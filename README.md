@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>e ちゃんねる - 投稿数表示版</title>
+    <title>e ちゃんねる - 完全匿名版</title>
     <style>
         :root { --e-green: #5cb85c; --e-purple: #4b0082; --bg-light-green: #f4f9f4; }
         html, body { margin: 0; padding: 0; background-color: var(--bg-light-green); min-height: 100vh; font-family: sans-serif; }
         header { background-color: white; padding: 30px 20px; text-align: center; border-bottom: 1px solid #ddd; }
         .logo-text { font-size: 40px; color: var(--e-green); font-weight: bold; margin: 0; }
-        .sub-title { font-size: 20px; color: var(--e-green); margin: 10px 0; font-weight: bold; }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
         .btn-create { background-color: var(--e-green); color: white; border: none; padding: 10px 15px; border-radius: 4px; font-size: 16px; cursor: pointer; margin-bottom: 20px; }
         .board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
@@ -18,7 +17,6 @@
         .post-info { font-size: 13px; color: #666; margin-top: 2px; }
         .board-del { position: absolute; top: 10px; right: 10px; font-size: 18px; color: #ccc; cursor: pointer; border: none; background: none; }
         #bbs-view { display: none; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; }
-        .form-label { font-size: 16px; margin-bottom: 5px; display: block; font-weight: bold; }
         .form-input { width: 150px; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; border-radius: 4px; }
         .form-textarea { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; border-radius: 4px; height: 100px; }
         .img-preview { max-width: 100px; max-height: 100px; display: block; margin-bottom: 10px; border: 2px dashed #ccc; }
@@ -26,7 +24,6 @@
         .btn-green { background-color: var(--e-green); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
         .post-item { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         .post-user { font-weight: bold; }
-        /* 写真がデカすぎないようにサイズ制限（最大150px） */
         .post-img { max-width: 150px; max-height: 150px; width: auto; height: auto; display: block; margin-top: 10px; border-radius: 4px; border: 1px solid #ddd; cursor: zoom-in; }
         .post-time { font-size: 12px; color: #888; margin-top: 5px; }
         .admin-del { font-size: 12px; color: #bbb; cursor: pointer; margin-left: 10px; text-decoration: underline; }
@@ -69,6 +66,7 @@
     const db = getFirestore(app);
     const ADMIN_PASS = "ZGVsdGE0Mzc="; 
 
+    // ブラウザごとの個体識別IDのみ生成（BAN用）
     const getFp = () => {
         let id = localStorage.getItem('fp');
         if (!id) { id = 'fp_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('fp', id); }
@@ -78,7 +76,7 @@
     let currentBoardId = '';
     let compressedImageData = '';
 
-    
+    // BANチェック
     async function checkBan() {
         const blackSnap = await getDoc(doc(db, 'blacklist', myId));
         if (blackSnap.exists()) {
@@ -112,7 +110,6 @@
         reader.readAsDataURL(file);
     };
 
-    // 掲示板一覧（投稿件数表示を復活）
     onSnapshot(query(collection(db, 'boards'), orderBy('lastUpdated', 'desc')), (snap) => {
         const list = document.getElementById('board-list');
         list.innerHTML = '';
@@ -121,8 +118,6 @@
             const card = document.createElement('div');
             card.className = 'board-card';
             card.onclick = (e) => { if(e.target.className !== 'board-del') openBoard(d.id, b.title); };
-            
-            // 投稿件数を取得
             onSnapshot(collection(db, `boards/${d.id}/messages`), (mSnap) => {
                 const count = mSnap.size;
                 card.innerHTML = `
@@ -145,7 +140,13 @@
     window.createNewBoard = async () => {
         if (await checkBan()) return;
         const t = prompt("掲示板名:");
-        
+        if (t) {
+            await addDoc(collection(db, 'boards'), { 
+                title: t, 
+                lastUpdated: Date.now(), 
+                ownerId: myId 
+            });
+        }
     };
 
     window.openBoard = (id, title) => {
@@ -177,7 +178,10 @@
         const now = Date.now();
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
             username: document.getElementById('username').value,
-            text: txt, timestamp: now, uid: myId, imageUrl: compressedImageData,
+            text: txt, 
+            timestamp: now, 
+            uid: myId, 
+            imageUrl: compressedImageData
         });
         await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
         document.getElementById('content').value = '';
