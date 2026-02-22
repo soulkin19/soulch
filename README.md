@@ -21,20 +21,17 @@
         .form-label { font-size: 16px; margin-bottom: 5px; display: block; }
         .form-input { width: 150px; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
         .form-textarea { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; box-sizing: border-box; height: 100px; }
-        .img-preview { max-width: 150px; max-height: 150px; display: block; margin-bottom: 10px; border: 1px dashed #ccc; border-radius: 4px; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
         .btn-green { background-color: var(--e-green); color: white; border: none; padding: 8px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
         .post-item { margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .post-user { font-weight: bold; }
         .post-time { font-size: 12px; color: #888; margin-top: 2px; }
-        .post-img { max-width: 300px; width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 4px; border: 1px solid #eee; }
         .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
         @media (max-width: 600px) {
             header { padding: 15px 10px; }
             .logo-text { font-size: 30px; }
             .container { padding: 10px; }
             .form-textarea { height: 60px; }
-            .post-img { max-width: 200px; }
         }
     </style>
 </head>
@@ -53,11 +50,8 @@
     <input type="text" id="username" class="form-input" value="名無しさん">
     <label class="form-label">内容:</label>
     <textarea id="content" class="form-textarea"></textarea>
-    <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="previewImage(this)">
-    <img id="preview-area" class="img-preview" style="display:none;">
     <div class="btn-group">
         <button class="btn-green" id="send-btn">投稿</button>
-        <button class="btn-green" onclick="document.getElementById('image-input').click()">画像</button>
         <button class="btn-green" onclick="location.reload()">戻る</button>
     </div>
     <div id="message-container"></div>
@@ -66,7 +60,6 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCwhHspaG94goiCIjVj3h-Un5pBK3JTjMU",
@@ -79,7 +72,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const storage = getStorage(app);
     const ADMIN_PASS = "ZGVsdGE0Mzc="; 
 
     const getFp = () => {
@@ -89,30 +81,6 @@
     };
     const myId = getFp();
     let currentBoardId = '';
-    let compressedImageData = '';
-
-    window.previewImage = (input) => {
-        const file = input.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width; let height = img.height; const max = 500;
-                if (width > height) { if (width > max) { height *= max / width; width = max; } }
-                else { if (height > max) { width *= max / height; height = max; } }
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                compressedImageData = canvas.toDataURL('image/jpeg', 0.6);
-                document.getElementById('preview-area').src = compressedImageData;
-                document.getElementById('preview-area').style.display = 'block';
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    };
 
     onSnapshot(query(collection(db, 'boards'), orderBy('lastUpdated', 'desc')), (snap) => {
         const list = document.getElementById('board-list');
@@ -166,7 +134,6 @@
                 const div = document.createElement('div');
                 div.className = 'post-item';
                 div.innerHTML = `<div><span class="post-user">${m.username}</span>: ${m.text}</div>
-                    ${m.imageUrl ? `<img src="${m.imageUrl}" class="post-img">` : ''}
                     <div class="post-time">${new Date(m.timestamp).toLocaleString()} 
                     <span class="admin-del" onclick="admin('${d.id}', '${m.uid}')">[管理]</span></div>`;
                 container.appendChild(div);
@@ -176,7 +143,7 @@
 
     document.getElementById('send-btn').onclick = async () => {
         const txt = document.getElementById('content').value;
-        if (!txt && !compressedImageData) return;
+        if (!txt) return;
         
         const blackSnap = await getDoc(doc(db, 'blacklist', myId));
         if (blackSnap.exists()) {
@@ -191,26 +158,16 @@
             }
         }
 
-        let url = '';
-        if (compressedImageData) {
-            const sRef = ref(storage, `images/${Date.now()}.jpg`);
-            await uploadString(sRef, compressedImageData, 'data_url');
-            url = await getDownloadURL(sRef);
-        }
-
         const now = Date.now();
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
             username: document.getElementById('username').value,
             text: txt,
             timestamp: now,
-            uid: myId,
-            imageUrl: url
+            uid: myId
         });
         await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
 
         document.getElementById('content').value = '';
-        document.getElementById('preview-area').style.display = 'none';
-        compressedImageData = '';
     };
 
     window.admin = async (mId, uId) => {
