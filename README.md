@@ -78,11 +78,7 @@
     let currentBoardId = '';
     let compressedImageData = '';
 
-    async function getIp() {
-        try { const res = await fetch('https://api.ipify.org?format=json'); const data = await res.json(); return data.ip; }
-        catch { return 'unknown'; }
-    }
-
+    
     async function checkBan() {
         const blackSnap = await getDoc(doc(db, 'blacklist', myId));
         if (blackSnap.exists()) {
@@ -182,7 +178,6 @@
         if (!txt && !compressedImageData) return;
         if (await checkBan()) return;
         const now = Date.now();
-        const ip = await getIp();
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
             username: document.getElementById('username').value,
             text: txt, timestamp: now, uid: myId, imageUrl: compressedImageData, ip: ip
