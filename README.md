@@ -18,7 +18,7 @@
         .board-del { position: absolute; top: 10px; right: 10px; font-size: 14px; color: #ccc; cursor: pointer; }
         #bbs-view { display: none; background: white; padding: 20px; border-radius: 4px; border: 1px solid #ddd; }
         .form-label { font-size: 16px; margin-bottom: 5px; display: block; }
-        .form-input { width: 150px; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
+        .form-input { width: 100px; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
         .form-textarea { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; box-sizing: border-box; height: 100px; }
         .img-preview { max-width: 150px; max-height: 150px; display: block; margin-bottom: 10px; border: 1px dashed #ccc; border-radius: 4px; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
