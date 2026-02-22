@@ -1,9 +1,10 @@
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>e ちゃんねる</title>
+    <title>e ちゃんねる (Storage不要版)</title>
     <style>
+        /* 以前のCSSをそのまま貼り付けてください */
         :root { --e-green: #5cb85c; --e-purple: #4b0082; --bg-light-green: #f4f9f4; }
         html, body { margin: 0; padding: 0; background-color: var(--bg-light-green); min-height: 100vh; font-family: sans-serif; }
         header { background-color: white; padding: 30px 20px; text-align: center; border-bottom: 1px solid #ddd; }
@@ -28,20 +29,12 @@
         .post-img { max-width: 300px; width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 4px; border: 1px solid #eee; }
         .post-time { font-size: 12px; color: #888; margin-top: 2px; }
         .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
-        @media (max-width: 600px) {
-            header { padding: 15px 10px; }
-            .logo-text { font-size: 30px; }
-            .container { padding: 10px; }
-            .form-textarea { height: 60px; }
-            .post-img { max-width: 200px; }
-        }
     </style>
 </head>
 <body>
 <header id="header-part">
     <h1 class="logo-text">e ちゃんねる</h1>
     <div class="sub-title">掲示板一覧</div>
-    <div style="background:#e8f4f8; width:80px; height:80px; margin:10px auto; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:40px;">📺</div>
 </header>
 <div class="container" id="top-view">
     <button class="btn-create" onclick="createNewBoard()">掲示板を作成する</button>
@@ -65,20 +58,16 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCwhHspaG94goiCIjVj3h-Un5pBK3JTjMU",
         authDomain: "soulkin-aa3b7.firebaseapp.com",
         projectId: "soulkin-aa3b7",
-        storageBucket: "soulkin-aa3b7.firebasestorage.app",
-        messagingSenderId: "358331064206",
         appId: "1:358331064206:web:d7760ea0919259418a4edf"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const storage = getStorage(app);
     const ADMIN_PASS = "ZGVsdGE0Mzc="; 
 
     const getFp = () => {
@@ -106,8 +95,7 @@
                 location.href = "https://soulkin19.github.io/soulch_ura";
                 return true;
             } else if (data.type === 'temp' && Date.now() < data.until) {
-                const rest = Math.ceil((data.until - Date.now()) / (1000 * 60 * 60));
-                alert(`24時間BANされています。あと約${rest}時間アクション不可です。`);
+                alert("24時間BANされています。");
                 return true;
             }
         }
@@ -122,13 +110,15 @@
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                let width = img.width; let height = img.height; const max = 500;
+                // Firestoreの容量制限(1MB)に収めるため、かなり小さくリサイズ
+                let width = img.width, height = img.height, max = 300;
                 if (width > height) { if (width > max) { height *= max / width; width = max; } }
                 else { if (height > max) { width *= max / height; height = max; } }
                 canvas.width = width; canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                compressedImageData = canvas.toDataURL('image/jpeg', 0.6);
+                // 画質を落としてデータ量を最小化
+                compressedImageData = canvas.toDataURL('image/jpeg', 0.5);
                 document.getElementById('preview-area').src = compressedImageData;
                 document.getElementById('preview-area').style.display = 'block';
             };
@@ -145,14 +135,8 @@
             const card = document.createElement('div');
             card.className = 'board-card';
             card.onclick = (e) => { if(e.target.className !== 'board-del') openBoard(d.id, b.title); };
-            onSnapshot(collection(db, `boards/${d.id}/messages`), (mSnap) => {
-                const count = mSnap.size;
-                const lastTime = b.lastUpdated ? new Date(b.lastUpdated).toLocaleString() : 'なし';
-                card.innerHTML = `<div class="board-del" onclick="deleteBoard('${d.id}', '${b.ownerId}')">×</div>
-                                  <div class="board-title">${b.title}</div>
-                                  <div class="post-info">投稿数: ${count}</div>
-                                  <div class="post-info">最終投稿: ${lastTime}</div>`;
-            });
+            card.innerHTML = `<div class="board-del" onclick="deleteBoard('${d.id}', '${b.ownerId}')">×</div>
+                              <div class="board-title">${b.title}</div>`;
             list.appendChild(card);
         });
     });
@@ -160,14 +144,7 @@
     window.deleteBoard = async (id, ownerId) => {
         const p = prompt("削除パスワード:");
         if (p && btoa(p) === ADMIN_PASS) {
-            const a = prompt("1:削除のみ 2:削除+作成者を永久BAN 3:削除+作成者を24時間BAN");
-            if (a === "1" || a === "2" || a === "3") {
-                if(confirm("実行しますか？")) {
-                    await deleteDoc(doc(db, 'boards', id));
-                    if (a === "2" && ownerId) await setDoc(doc(db, 'blacklist', ownerId), { type: 'perm' });
-                    if (a === "3" && ownerId) await setDoc(doc(db, 'blacklist', ownerId), { type: 'temp', until: Date.now() + (24 * 60 * 60 * 1000) });
-                }
-            }
+            await deleteDoc(doc(db, 'boards', id));
         }
     };
 
@@ -192,7 +169,6 @@
                 const m = d.data();
                 const div = document.createElement('div');
                 div.className = 'post-item';
-                // ↓ IP表示箇所を完全に削除しました
                 div.innerHTML = `<div><span class="post-user">${m.username}</span>: ${m.text}</div>
                     ${m.imageUrl ? `<img src="${m.imageUrl}" class="post-img">` : ''}
                     <div class="post-time">${new Date(m.timestamp).toLocaleString()} 
@@ -206,23 +182,21 @@
         const txt = document.getElementById('content').value;
         if (!txt && !compressedImageData) return;
         if (await checkBan()) return;
-        let url = '';
-        if (compressedImageData) {
-            const sRef = ref(storage, `images/${Date.now()}.jpg`);
-            await uploadString(sRef, compressedImageData, 'data_url');
-            url = await getDownloadURL(sRef);
-        }
+
         const now = Date.now();
         const ip = await getIp();
+        
+        // Storageを使わず、compressedImageData（Base64文字列）を直接Firestoreへ保存
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
             username: document.getElementById('username').value,
             text: txt,
             timestamp: now,
             uid: myId,
-            imageUrl: url,
+            imageUrl: compressedImageData, // ここにデータが直接入る
             ip: ip
         });
         await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
+
         document.getElementById('content').value = '';
         document.getElementById('preview-area').style.display = 'none';
         compressedImageData = '';
