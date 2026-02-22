@@ -26,6 +26,7 @@
         .btn-green { background-color: var(--e-green); color: white; border: none; padding: 8px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
         .post-item { margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .post-user { font-weight: bold; }
+        .post-ip { font-size: 11px; color: #999; margin-left: 5px; font-weight: normal; }
         .post-img { max-width: 300px; width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 4px; border: 1px solid #eee; }
         .post-time { font-size: 12px; color: #888; margin-top: 2px; }
         .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
@@ -91,6 +92,32 @@
     let currentBoardId = '';
     let compressedImageData = '';
 
+    // IP取得
+    async function getIp() {
+        try {
+            const res = await fetch('https://api.ipify.org?format=json');
+            const data = await res.json();
+            return data.ip;
+        } catch { return 'unknown'; }
+    }
+
+    // BANチェック共通関数
+    async function checkBan() {
+        const blackSnap = await getDoc(doc(db, 'blacklist', myId));
+        if (blackSnap.exists()) {
+            const data = blackSnap.data();
+            if (data.type === 'perm') {
+                location.href = "https://soulkin19.github.io/soulch_ura";
+                return true;
+            } else if (data.type === 'temp' && Date.now() < data.until) {
+                const rest = Math.ceil((data.until - Date.now()) / (1000 * 60 * 60));
+                alert(`24時間BANされています。あと約${rest}時間アクション不可です。`);
+                return true;
+            }
+        }
+        return false;
+    }
+
     window.previewImage = (input) => {
         const file = input.files[0];
         if (!file) return;
@@ -149,8 +176,12 @@
     };
 
     window.createNewBoard = async () => {
+        if (await checkBan()) return; // スレ立てもBANチェック
         const t = prompt("掲示板名:");
-        if (t) await addDoc(collection(db, 'boards'), { title: t, lastUpdated: Date.now(), ownerId: myId });
+        if (t) {
+            const ip = await getIp();
+            await addDoc(collection(db, 'boards'), { title: t, lastUpdated: Date.now(), ownerId: myId, ip: ip });
+        }
     };
 
     window.openBoard = (id, title) => {
@@ -165,7 +196,7 @@
                 const m = d.data();
                 const div = document.createElement('div');
                 div.className = 'post-item';
-                div.innerHTML = `<div><span class="post-user">${m.username}</span>: ${m.text}</div>
+                div.innerHTML = `<div><span class="post-user">${m.username}</span><span class="post-ip">[IP: ${m.ip || '不明'}]</span>: ${m.text}</div>
                     ${m.imageUrl ? `<img src="${m.imageUrl}" class="post-img">` : ''}
                     <div class="post-time">${new Date(m.timestamp).toLocaleString()} 
                     <span class="admin-del" onclick="admin('${d.id}', '${m.uid}')">[管理]</span></div>`;
@@ -178,18 +209,7 @@
         const txt = document.getElementById('content').value;
         if (!txt && !compressedImageData) return;
         
-        const blackSnap = await getDoc(doc(db, 'blacklist', myId));
-        if (blackSnap.exists()) {
-            const data = blackSnap.data();
-            if (data.type === 'perm') {
-                location.href = "https://soulkin19.github.io/soulch_ura";
-                return;
-            } else if (data.type === 'temp' && Date.now() < data.until) {
-                const rest = Math.ceil((data.until - Date.now()) / (1000 * 60 * 60));
-                alert(`24時間BANされています。あと約${rest}時間投稿できません。`);
-                return;
-            }
-        }
+        if (await checkBan()) return; // 投稿BANチェック
 
         let url = '';
         if (compressedImageData) {
@@ -199,12 +219,14 @@
         }
 
         const now = Date.now();
+        const ip = await getIp();
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
             username: document.getElementById('username').value,
             text: txt,
             timestamp: now,
             uid: myId,
-            imageUrl: url
+            imageUrl: url,
+            ip: ip // IPを保存
         });
         await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
 
