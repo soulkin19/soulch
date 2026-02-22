@@ -23,7 +23,7 @@
         .form-label { font-size: 16px; margin-bottom: 5px; display: block; font-weight: bold; }
         .form-input { width: 150px; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; border-radius: 4px; }
         .form-textarea { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; border-radius: 4px; height: 100px; font-size: 16px; }
-        .img-preview { max-width: 150px; max-height: 150px; display: block; margin-bottom: 10px; border: 2px dashed #ccc; border-radius: 4px; }
+        .img-preview { max-width: 50px; max-height: 50px; display: block; margin-bottom: 10px; border: 2px dashed #ccc; border-radius: 4px; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
         .btn-green { background-color: var(--e-green); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; }
         .post-item { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
