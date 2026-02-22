@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>e ちゃんねる (Storage不要版)</title>
     <style>
-        /* 以前のCSSをそのまま貼り付けてください */
         :root { --e-green: #5cb85c; --e-purple: #4b0082; --bg-light-green: #f4f9f4; }
         html, body { margin: 0; padding: 0; background-color: var(--bg-light-green); min-height: 100vh; font-family: sans-serif; }
         header { background-color: white; padding: 30px 20px; text-align: center; border-bottom: 1px solid #ddd; }
@@ -29,7 +28,13 @@
         .post-img { max-width: 300px; width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 4px; border: 1px solid #eee; }
         .post-time { font-size: 12px; color: #888; margin-top: 2px; }
         .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
-    </style>
+        @media (max-width: 600px) {
+            header { padding: 15px 10px; }
+            .logo-text { font-size: 30px; }
+            .container { padding: 10px; }
+            .form-textarea { height: 60px; }
+            .post-img { max-width: 200px; }
+        }
 </head>
 <body>
 <header id="header-part">
