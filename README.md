@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -90,7 +91,6 @@
     let currentBoardId = '';
     let compressedImageData = '';
 
-    // IP取得
     async function getIp() {
         try {
             const res = await fetch('https://api.ipify.org?format=json');
@@ -99,7 +99,6 @@
         } catch { return 'unknown'; }
     }
 
-    // BANチェック共通関数
     async function checkBan() {
         const blackSnap = await getDoc(doc(db, 'blacklist', myId));
         if (blackSnap.exists()) {
@@ -174,7 +173,7 @@
     };
 
     window.createNewBoard = async () => {
-        if (await checkBan()) return; // スレ立てもBANチェック
+        if (await checkBan()) return;
         const t = prompt("掲示板名:");
         if (t) {
             const ip = await getIp();
@@ -194,7 +193,7 @@
                 const m = d.data();
                 const div = document.createElement('div');
                 div.className = 'post-item';
-                div.innerHTML = `<div><span class="post-user">${m.username}</span><span class="post-ip">[IP: ${m.ip || '不明'}]</span>: ${m.text}</div>
+                div.innerHTML = `<div><span class="post-user">${m.username}</span>: ${m.text}</div>
                     ${m.imageUrl ? `<img src="${m.imageUrl}" class="post-img">` : ''}
                     <div class="post-time">${new Date(m.timestamp).toLocaleString()} 
                     <span class="admin-del" onclick="admin('${d.id}', '${m.uid}')">[管理]</span></div>`;
@@ -207,7 +206,7 @@
         const txt = document.getElementById('content').value;
         if (!txt && !compressedImageData) return;
         
-        if (await checkBan()) return; // 投稿BANチェック
+        if (await checkBan()) return;
 
         let url = '';
         if (compressedImageData) {
@@ -224,7 +223,7 @@
             timestamp: now,
             uid: myId,
             imageUrl: url,
-            ip: ip // IPを保存
+            ip: ip
         });
         await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
 
@@ -244,3 +243,4 @@
     };
 </script>
 </body>
+</html>
