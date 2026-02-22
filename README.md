@@ -23,9 +23,10 @@
         .form-textarea { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; box-sizing: border-box; height: 100px; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
         .btn-green { background-color: var(--e-green); color: white; border: none; padding: 8px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
-        .post-item { margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .post-item { margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; word-break: break-all; }
         .post-user { font-weight: bold; }
-        .post-time { font-size: 12px; color: #888; margin-top: 2px; }
+        .post-content { margin-top: 5px; white-space: pre-wrap; } /* 改行を有効にしつつタグを無効化 */
+        .post-time { font-size: 12px; color: #888; margin-top: 5px; }
         .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
         @media (max-width: 600px) {
             header { padding: 15px 10px; }
@@ -94,9 +95,10 @@
                 const count = mSnap.size;
                 const lastTime = b.lastUpdated ? new Date(b.lastUpdated).toLocaleString() : 'なし';
                 card.innerHTML = `<div class="board-del" onclick="deleteBoard('${d.id}', '${b.ownerId}')">×</div>
-                                  <div class="board-title">${b.title}</div>
+                                  <div class="board-title"></div>
                                   <div class="post-info">投稿数: ${count}</div>
                                   <div class="post-info">最終投稿: ${lastTime}</div>`;
+                card.querySelector('.board-title').innerText = b.title; // タイトルのタグ無効化
             });
             list.appendChild(card);
         });
@@ -133,9 +135,16 @@
                 const m = d.data();
                 const div = document.createElement('div');
                 div.className = 'post-item';
-                div.innerHTML = `<div><span class="post-user">${m.username}</span>: ${m.text}</div>
+                
+                // 構造を作成
+                div.innerHTML = `<div><span class="post-user"></span>: <span class="post-content"></span></div>
                     <div class="post-time">${new Date(m.timestamp).toLocaleString()} 
                     <span class="admin-del" onclick="admin('${d.id}', '${m.uid}')">[管理]</span></div>`;
+                
+                // innerTextを使ってテキストのみを注入（HTMLタグを無効化）
+                div.querySelector('.post-user').innerText = m.username;
+                div.querySelector('.post-content').innerText = m.text;
+                
                 container.appendChild(div);
             });
         });
