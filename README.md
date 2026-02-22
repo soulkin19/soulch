@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -18,15 +19,15 @@
         .board-del { position: absolute; top: 10px; right: 10px; font-size: 14px; color: #ccc; cursor: pointer; }
         #bbs-view { display: none; background: white; padding: 20px; border-radius: 4px; border: 1px solid #ddd; }
         .form-label { font-size: 16px; margin-bottom: 5px; display: block; }
-        .form-input { width: 100px; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
-        .form-textarea { width: 50%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; box-sizing: border-box; height: 100px; }
+        .form-input { width: 150px; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
+        .form-textarea { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; box-sizing: border-box; height: 100px; }
         .img-preview { max-width: 150px; max-height: 150px; display: block; margin-bottom: 10px; border: 1px dashed #ccc; border-radius: 4px; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
         .btn-green { background-color: var(--e-green); color: white; border: none; padding: 8px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
         .post-item { margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .post-user { font-weight: bold; }
         .post-time { font-size: 12px; color: #888; margin-top: 2px; }
-        .post-img { max-width: 50px; width: 20%; height: auto; display: block; margin-top: 10px; border-radius: 4px; border: 1px solid #eee; }
+        .post-img { max-width: 300px; width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 4px; border: 1px solid #eee; }
         .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
         @media (max-width: 600px) {
             header { padding: 15px 10px; }
@@ -61,28 +62,33 @@
     </div>
     <div id="message-container"></div>
 </div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded, onValue, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
     const firebaseConfig = {
         apiKey: "AIzaSyCwhHspaG94goiCIjVj3h-Un5pBK3JTjMU",
         authDomain: "soulkin-aa3b7.firebaseapp.com",
-        databaseURL: "https://soulkin-aa3b7-default-rtdb.firebaseio.com",
         projectId: "soulkin-aa3b7",
         storageBucket: "soulkin-aa3b7.firebasestorage.app",
         messagingSenderId: "358331064206",
         appId: "1:358331064206:web:d7760ea0919259418a4edf"
     };
+
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
     const ADMIN_PASS = "ZGVsdGE0Mzc="; 
+
     const getFp = () => {
         let id = localStorage.getItem('fp');
         if (!id) { id = 'fp_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('fp', id); }
         return id;
     };
     const myId = getFp();
-    let currentKey = '';
+    let currentBoardId = '';
     let compressedImageData = '';
 
     window.previewImage = (input) => {
@@ -93,13 +99,10 @@
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-                const max = 500;
+                let width = img.width; let height = img.height; const max = 500;
                 if (width > height) { if (width > max) { height *= max / width; width = max; } }
                 else { if (height > max) { width *= max / height; height = max; } }
-                canvas.width = width;
-                canvas.height = height;
+                canvas.width = width; canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
                 compressedImageData = canvas.toDataURL('image/jpeg', 0.6);
@@ -111,20 +114,18 @@
         reader.readAsDataURL(file);
     };
 
-    onValue(ref(db, 'boards'), (snap) => {
+    onSnapshot(query(collection(db, 'boards'), orderBy('lastUpdated', 'desc')), (snap) => {
         const list = document.getElementById('board-list');
         list.innerHTML = '';
-        const boards = [];
-        snap.forEach(c => { boards.push({ key: c.key, ...c.val() }); });
-        boards.sort((a, b) => (b.lastUpdated || 0) - (a.lastUpdated || 0));
-        boards.forEach(b => {
+        snap.forEach(d => {
+            const b = d.data();
             const card = document.createElement('div');
             card.className = 'board-card';
-            card.onclick = (e) => { if(e.target.className !== 'board-del') openBoard(b.key, b.title); };
-            onValue(ref(db, `messages/${b.key}`), (mSnap) => {
-                const count = mSnap.exists() ? Object.keys(mSnap.val()).length : 0;
+            card.onclick = (e) => { if(e.target.className !== 'board-del') openBoard(d.id, b.title); };
+            onSnapshot(collection(db, `boards/${d.id}/messages`), (mSnap) => {
+                const count = mSnap.size;
                 const lastTime = b.lastUpdated ? new Date(b.lastUpdated).toLocaleString() : 'なし';
-                card.innerHTML = `<div class="board-del" onclick="deleteBoard('${b.key}')">×</div>
+                card.innerHTML = `<div class="board-del" onclick="deleteBoard('${d.id}', '${b.ownerId}')">×</div>
                                   <div class="board-title">${b.title}</div>
                                   <div class="post-info">投稿数: ${count}</div>
                                   <div class="post-info">最終投稿: ${lastTime}</div>`;
@@ -132,62 +133,95 @@
             list.appendChild(card);
         });
     });
-    window.deleteBoard = (key) => {
+
+    window.deleteBoard = async (id, ownerId) => {
         const p = prompt("削除パスワード:");
         if (p && btoa(p) === ADMIN_PASS) {
-            if(confirm("スレッドを完全に削除しますか？")) {
-                remove(ref(db, `boards/${key}`));
-                remove(ref(db, `messages/${key}`));
+            const a = prompt("1:削除のみ 2:削除+作成者を永久BAN 3:削除+作成者を24時間BAN");
+            if (a === "1" || a === "2" || a === "3") {
+                if(confirm("実行しますか？")) {
+                    await deleteDoc(doc(db, 'boards', id));
+                    if (a === "2" && ownerId) await setDoc(doc(db, 'blacklist', ownerId), { type: 'perm' });
+                    if (a === "3" && ownerId) await setDoc(doc(db, 'blacklist', ownerId), { type: 'temp', until: Date.now() + (24 * 60 * 60 * 1000) });
+                }
             }
         }
     };
-    window.createNewBoard = () => {
+
+    window.createNewBoard = async () => {
         const t = prompt("掲示板名:");
-        if (t) push(ref(db, 'boards'), { title: t, lastUpdated: Date.now() });
+        if (t) await addDoc(collection(db, 'boards'), { title: t, lastUpdated: Date.now(), ownerId: myId });
     };
-    window.openBoard = (key, title) => {
-        currentKey = key;
+
+    window.openBoard = (id, title) => {
+        currentBoardId = id;
         document.getElementById('top-view').style.display = 'none';
         document.getElementById('header-part').style.display = 'none';
         document.getElementById('bbs-view').style.display = 'block';
         const container = document.getElementById('message-container');
-        container.innerHTML = '';
-        onChildAdded(ref(db, `messages/${key}`), (s) => {
-            const m = s.val();
-            const div = document.createElement('div');
-            div.className = 'post-item';
-            div.id = `m-${s.key}`;
-            div.innerHTML = `<div><span class="post-user">${m.username}</span>: ${m.text}</div>
-                ${m.image ? `<img src="${m.image}" class="post-img">` : ''}
-                <div class="post-time">${new Date(m.timestamp).toLocaleString()} <span class="admin-del" onclick="admin('${s.key}', '${m.uid}')">[管理]</span></div>`;
-            container.prepend(div);
+        onSnapshot(query(collection(db, `boards/${id}/messages`), orderBy('timestamp', 'desc')), (snap) => {
+            container.innerHTML = '';
+            snap.forEach(d => {
+                const m = d.data();
+                const div = document.createElement('div');
+                div.className = 'post-item';
+                div.innerHTML = `<div><span class="post-user">${m.username}</span>: ${m.text}</div>
+                    ${m.imageUrl ? `<img src="${m.imageUrl}" class="post-img">` : ''}
+                    <div class="post-time">${new Date(m.timestamp).toLocaleString()} 
+                    <span class="admin-del" onclick="admin('${d.id}', '${m.uid}')">[管理]</span></div>`;
+                container.appendChild(div);
+            });
         });
     };
+
     document.getElementById('send-btn').onclick = async () => {
         const txt = document.getElementById('content').value;
         if (!txt && !compressedImageData) return;
-        const b = await get(ref(db, `blacklist/${myId}`));
-        if (b.exists()) { alert("投稿禁止されています"); return; }
+        
+        const blackSnap = await getDoc(doc(db, 'blacklist', myId));
+        if (blackSnap.exists()) {
+            const data = blackSnap.data();
+            if (data.type === 'perm') {
+                location.href = "https://soulkin19.github.io/soulch_ura";
+                return;
+            } else if (data.type === 'temp' && Date.now() < data.until) {
+                const rest = Math.ceil((data.until - Date.now()) / (1000 * 60 * 60));
+                alert(`24時間BANされています。あと約${rest}時間投稿できません。`);
+                return;
+            }
+        }
+
+        let url = '';
+        if (compressedImageData) {
+            const sRef = ref(storage, `images/${Date.now()}.jpg`);
+            await uploadString(sRef, compressedImageData, 'data_url');
+            url = await getDownloadURL(sRef);
+        }
+
         const now = Date.now();
-        push(ref(db, `messages/${currentKey}`), { 
-            username: document.getElementById('username').value, 
-            text: txt, 
-            timestamp: now, 
+        await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
+            username: document.getElementById('username').value,
+            text: txt,
+            timestamp: now,
             uid: myId,
-            image: compressedImageData 
+            imageUrl: url
         });
-        update(ref(db, `boards/${currentKey}`), { lastUpdated: now });
+        await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
+
         document.getElementById('content').value = '';
         document.getElementById('preview-area').style.display = 'none';
         compressedImageData = '';
     };
-    window.admin = (mKey, uId) => {
+
+    window.admin = async (mId, uId) => {
         const p = prompt("パスワード:");
         if (p && btoa(p) === ADMIN_PASS) {
-            const a = prompt("1:削除 2:アク禁");
-            if (a === "1") { remove(ref(db, `messages/${currentKey}/${mKey}`)); document.getElementById(`m-${mKey}`).remove(); }
-            else if (a === "2") { update(ref(db, `blacklist/${uId}`), { banned: true }); alert("完了"); }
+            const a = prompt("1:削除 2:永久BAN 3:24時間BAN");
+            if (a === "1") await deleteDoc(doc(db, `boards/${currentBoardId}/messages`, mId));
+            else if (a === "2") await setDoc(doc(db, 'blacklist', uId), { type: 'perm' });
+            else if (a === "3") await setDoc(doc(db, 'blacklist', uId), { type: 'temp', until: Date.now() + (24 * 60 * 60 * 1000) });
         }
     };
 </script>
 </body>
+</html>
