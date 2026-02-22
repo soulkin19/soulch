@@ -25,7 +25,6 @@
         .btn-green { background-color: var(--e-green); color: white; border: none; padding: 8px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
         .post-item { margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .post-user { font-weight: bold; }
-        .post-ip { font-size: 11px; color: #999; margin-left: 5px; font-weight: normal; }
         .post-img { max-width: 300px; width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 4px; border: 1px solid #eee; }
         .post-time { font-size: 12px; color: #888; margin-top: 2px; }
         .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
