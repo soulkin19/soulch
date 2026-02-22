@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>e ちゃんねる (Storage不要版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e ちゃんねる - 完全版</title>
     <style>
         :root { --e-green: #5cb85c; --e-purple: #4b0082; --bg-light-green: #f4f9f4; }
         html, body { margin: 0; padding: 0; background-color: var(--bg-light-green); min-height: 100vh; font-family: sans-serif; }
@@ -12,50 +13,55 @@
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
         .btn-create { background-color: var(--e-green); color: white; border: none; padding: 10px 15px; border-radius: 4px; font-size: 16px; cursor: pointer; margin-bottom: 20px; }
         .board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
-        .board-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; cursor: pointer; position: relative; }
-        .board-title { font-size: 18px; color: var(--e-purple); font-weight: bold; text-decoration: underline; margin-bottom: 5px; padding-right: 20px; }
-        .post-info { font-size: 13px; color: #666; text-decoration: underline; margin-top: 2px; }
-        .board-del { position: absolute; top: 10px; right: 10px; font-size: 14px; color: #ccc; cursor: pointer; }
-        #bbs-view { display: none; background: white; padding: 20px; border-radius: 4px; border: 1px solid #ddd; }
-        .form-label { font-size: 16px; margin-bottom: 5px; display: block; }
-        .form-input { width: 150px; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; box-sizing: border-box; }
-        .form-textarea { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; box-sizing: border-box; height: 100px; }
-        .img-preview { max-width: 150px; max-height: 150px; display: block; margin-bottom: 10px; border: 1px dashed #ccc; border-radius: 4px; }
-        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
-        .btn-green { background-color: var(--e-green); color: white; border: none; padding: 8px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; }
-        .post-item { margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .post-user { font-weight: bold; }
-        .post-img { max-width: 300px; width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 4px; border: 1px solid #eee; }
-        .post-time { font-size: 12px; color: #888; margin-top: 2px; }
-        .admin-del { font-size: 11px; color: #ccc; cursor: pointer; margin-left: 10px; }
+        .board-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; cursor: pointer; position: relative; transition: 0.2s; }
+        .board-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .board-title { font-size: 18px; color: var(--e-purple); font-weight: bold; text-decoration: underline; margin-bottom: 5px; padding-right: 25px; }
+        .post-info { font-size: 13px; color: #666; margin-top: 2px; }
+        .board-del { position: absolute; top: 10px; right: 10px; font-size: 18px; color: #ccc; cursor: pointer; border: none; background: none; }
+        .board-del:hover { color: #f43f5e; }
+        #bbs-view { display: none; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; }
+        .form-label { font-size: 16px; margin-bottom: 5px; display: block; font-weight: bold; }
+        .form-input { width: 150px; border: 1px solid #ccc; padding: 8px; margin-bottom: 15px; border-radius: 4px; }
+        .form-textarea { width: 100%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; border-radius: 4px; height: 100px; font-size: 16px; }
+        .img-preview { max-width: 150px; max-height: 150px; display: block; margin-bottom: 10px; border: 2px dashed #ccc; border-radius: 4px; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .btn-green { background-color: var(--e-green); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .post-item { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .post-user { font-weight: bold; color: #333; }
+        .post-img { max-width: 300px; width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; }
+        .post-time { font-size: 12px; color: #888; margin-top: 5px; }
+        .admin-del { font-size: 12px; color: #bbb; cursor: pointer; margin-left: 10px; text-decoration: underline; }
         @media (max-width: 600px) {
             header { padding: 15px 10px; }
             .logo-text { font-size: 30px; }
             .container { padding: 10px; }
-            .form-textarea { height: 60px; }
-            .post-img { max-width: 200px; }
+            .form-textarea { height: 80px; }
         }
+    </style>
 </head>
 <body>
+
 <header id="header-part">
     <h1 class="logo-text">e ちゃんねる</h1>
     <div class="sub-title">掲示板一覧</div>
 </header>
+
 <div class="container" id="top-view">
-    <button class="btn-create" onclick="createNewBoard()">掲示板を作成する</button>
+    <button class="btn-create" onclick="createNewBoard()">＋ 掲示板を作成する</button>
     <div class="board-grid" id="board-list"></div>
 </div>
+
 <div class="container" id="bbs-view">
     <label class="form-label">名前:</label>
     <input type="text" id="username" class="form-input" value="名無しさん">
-    <label class="form-label">内容:</label>
-    <textarea id="content" class="form-textarea"></textarea>
+    <label class="form-label">投稿内容:</label>
+    <textarea id="content" class="form-textarea" placeholder="書き込み内容を入力..."></textarea>
     <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="previewImage(this)">
     <img id="preview-area" class="img-preview" style="display:none;">
     <div class="btn-group">
-        <button class="btn-green" id="send-btn">投稿</button>
-        <button class="btn-green" onclick="document.getElementById('image-input').click()">画像</button>
-        <button class="btn-green" onclick="location.reload()">戻る</button>
+        <button class="btn-green" id="send-btn">投稿する</button>
+        <button class="btn-green" style="background-color: #555;" onclick="document.getElementById('image-input').click()">📷 画像選択</button>
+        <button class="btn-green" style="background-color: #888;" onclick="location.reload()">◀ 戻る</button>
     </div>
     <div id="message-container"></div>
 </div>
@@ -64,6 +70,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // Firebase設定 (Firestoreのみ使用)
     const firebaseConfig = {
         apiKey: "AIzaSyCwhHspaG94goiCIjVj3h-Un5pBK3JTjMU",
         authDomain: "soulkin-aa3b7.firebaseapp.com",
@@ -73,7 +80,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const ADMIN_PASS = "ZGVsdGE0Mzc="; 
+    const ADMIN_PASS = "ZGVsdGE0Mzc="; // delta437
 
     const getFp = () => {
         let id = localStorage.getItem('fp');
@@ -84,6 +91,7 @@
     let currentBoardId = '';
     let compressedImageData = '';
 
+    // IP取得
     async function getIp() {
         try {
             const res = await fetch('https://api.ipify.org?format=json');
@@ -92,6 +100,7 @@
         } catch { return 'unknown'; }
     }
 
+    // BANチェック
     async function checkBan() {
         const blackSnap = await getDoc(doc(db, 'blacklist', myId));
         if (blackSnap.exists()) {
@@ -100,13 +109,14 @@
                 location.href = "https://soulkin19.github.io/soulch_ura";
                 return true;
             } else if (data.type === 'temp' && Date.now() < data.until) {
-                alert("24時間BANされています。");
+                alert(`現在制限中です。解除までお待ちください。`);
                 return true;
             }
         }
         return false;
     }
 
+    // 画像圧縮処理 (Firestoreの1MB制限に収めるため)
     window.previewImage = (input) => {
         const file = input.files[0];
         if (!file) return;
@@ -115,14 +125,13 @@
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                // Firestoreの容量制限(1MB)に収めるため、かなり小さくリサイズ
-                let width = img.width, height = img.height, max = 300;
+                let width = img.width, height = img.height, max = 400; // 最大幅400px
                 if (width > height) { if (width > max) { height *= max / width; width = max; } }
                 else { if (height > max) { width *= max / height; height = max; } }
                 canvas.width = width; canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                // 画質を落としてデータ量を最小化
+                // 画質を0.5まで落として軽量化
                 compressedImageData = canvas.toDataURL('image/jpeg', 0.5);
                 document.getElementById('preview-area').src = compressedImageData;
                 document.getElementById('preview-area').style.display = 'block';
@@ -132,6 +141,7 @@
         reader.readAsDataURL(file);
     };
 
+    // 掲示板一覧のリアルタイム表示
     onSnapshot(query(collection(db, 'boards'), orderBy('lastUpdated', 'desc')), (snap) => {
         const list = document.getElementById('board-list');
         list.innerHTML = '';
@@ -139,29 +149,41 @@
             const b = d.data();
             const card = document.createElement('div');
             card.className = 'board-card';
-            card.onclick = (e) => { if(e.target.className !== 'board-del') openBoard(d.id, b.title); };
-            card.innerHTML = `<div class="board-del" onclick="deleteBoard('${d.id}', '${b.ownerId}')">×</div>
-                              <div class="board-title">${b.title}</div>`;
+            card.onclick = (e) => { if(e.target.tagName !== 'BUTTON' && e.target.className !== 'board-del') openBoard(d.id, b.title); };
+            card.innerHTML = `
+                <button class="board-del" onclick="deleteBoard('${d.id}', '${b.ownerId}')">×</button>
+                <div class="board-title">${b.title}</div>
+                <div class="post-info">最終更新: ${new Date(b.lastUpdated).toLocaleString()}</div>
+            `;
             list.appendChild(card);
         });
     });
 
+    // 掲示板削除
     window.deleteBoard = async (id, ownerId) => {
-        const p = prompt("削除パスワード:");
+        event.stopPropagation();
+        const p = prompt("削除パスワードを入力:");
         if (p && btoa(p) === ADMIN_PASS) {
-            await deleteDoc(doc(db, 'boards', id));
+            if(confirm("この掲示板を削除しますか？")) await deleteDoc(doc(db, 'boards', id));
         }
     };
 
+    // 新規掲示板作成 (BANチェックあり)
     window.createNewBoard = async () => {
         if (await checkBan()) return;
-        const t = prompt("掲示板名:");
+        const t = prompt("掲示板のタイトルを入力:");
         if (t) {
             const ip = await getIp();
-            await addDoc(collection(db, 'boards'), { title: t, lastUpdated: Date.now(), ownerId: myId, ip: ip });
+            await addDoc(collection(db, 'boards'), { 
+                title: t, 
+                lastUpdated: Date.now(), 
+                ownerId: myId, 
+                ip: ip 
+            });
         }
     };
 
+    // スレッドを開く
     window.openBoard = (id, title) => {
         currentBoardId = id;
         document.getElementById('top-view').style.display = 'none';
@@ -174,15 +196,18 @@
                 const m = d.data();
                 const div = document.createElement('div');
                 div.className = 'post-item';
-                div.innerHTML = `<div><span class="post-user">${m.username}</span>: ${m.text}</div>
+                div.innerHTML = `
+                    <div><span class="post-user">${m.username}</span>: ${m.text}</div>
                     ${m.imageUrl ? `<img src="${m.imageUrl}" class="post-img">` : ''}
                     <div class="post-time">${new Date(m.timestamp).toLocaleString()} 
-                    <span class="admin-del" onclick="admin('${d.id}', '${m.uid}')">[管理]</span></div>`;
+                    <span class="admin-del" onclick="admin('${d.id}', '${m.uid}')">[管理]</span></div>
+                `;
                 container.appendChild(div);
             });
         });
     };
 
+    // メッセージ投稿 (Storage不要、Base64保存)
     document.getElementById('send-btn').onclick = async () => {
         const txt = document.getElementById('content').value;
         if (!txt && !compressedImageData) return;
@@ -191,24 +216,26 @@
         const now = Date.now();
         const ip = await getIp();
         
-        // Storageを使わず、compressedImageData（Base64文字列）を直接Firestoreへ保存
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
             username: document.getElementById('username').value,
             text: txt,
             timestamp: now,
             uid: myId,
-            imageUrl: compressedImageData, // ここにデータが直接入る
+            imageUrl: compressedImageData, // Base64テキストとしてFirestoreに保存
             ip: ip
         });
+        
         await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
 
+        // フォームリセット
         document.getElementById('content').value = '';
         document.getElementById('preview-area').style.display = 'none';
         compressedImageData = '';
     };
 
+    // 管理メニュー
     window.admin = async (mId, uId) => {
-        const p = prompt("パスワード:");
+        const p = prompt("管理パスワード:");
         if (p && btoa(p) === ADMIN_PASS) {
             const a = prompt("1:削除 2:永久BAN 3:24時間BAN");
             if (a === "1") await deleteDoc(doc(db, `boards/${currentBoardId}/messages`, mId));
