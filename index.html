@@ -56,7 +56,7 @@
 
 <header id="header-part">
     <h1 class="logo-text">e ちゃんねる</h1>
-    <div class="sub-title">掲示板一覧</div>
+    <div class="sub-title"><span class="material-icons">list_alt</span>掲示板一覧</div>
 </header>
 
 <div class="container" id="top-view">
@@ -71,7 +71,7 @@
             6. 掲示板への書き込み、掲示板の作成を行った時点でこの規約に同意したものとします。
         </div>
     </div>
-    <button class="btn-create" onclick="createNewBoard()">規約に同意して掲示板を作成する</button>
+    <button class="btn-create" onclick="createNewBoard()"><span class="material-icons">assignment_turned_in</span>規約に同意して掲示板を作成する</button>
     <div class="board-grid" id="board-list"></div>
 </div>
 
@@ -82,9 +82,9 @@
     <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="previewImage(this)">
     <img id="preview-area" class="img-preview">
     <div class="btn-group">
-        <button class="btn-green" onclick="sendPost()">投稿</button>
-        <button class="btn-green" style="background-color: #666;" onclick="document.getElementById('image-input').click()">画像選択</button>
-        <button class="btn-green" style="background-color: #999;" onclick="location.reload()">戻る</button>
+        <button class="btn-green" onclick="sendPost()"><span class="material-icons" style="font-size:16px;">comment</span>投稿</button>
+        <button class="btn-green" style="background-color: #666;" onclick="document.getElementById('image-input').click()"><span class="material-icons" style="font-size:16px;">add_photo_alternate</span>画像選択</button>
+        <button class="btn-green" style="background-color: #999;" onclick="location.reload()"><span class="material-icons" style="font-size:16px;">arrow_back</span>戻る</button>
     </div>
     <div id="message-container"></div>
 </div>
@@ -187,7 +187,7 @@
                     ${m.imageUrl ? `<img src="${m.imageUrl}" class="post-img" onclick="window.open('${m.imageUrl}')">` : ''}
                     <div class="reaction-bar">
                         <button class="reaction-btn" onclick="handleReact('${d.id}', 'kusa')">😂 ${m.kusa || 0}</button>
-                        <button class="reaction-btn" onclick="handleReact('${d.id}', 'good')">👍 ${m.good || 0}</button>
+                        <button class="reaction-btn" onclick="handleReact('${d.id}', 'good')"><span class="material-icons" style="font-size:10px;">thumb_up</span> ${m.good || 0}</button>
                         <button class="reaction-btn" onclick="handleReact('${d.id}', 'kami')">😲 ${m.kami || 0}</button>
                     </div>
                     <div class="post-footer">
