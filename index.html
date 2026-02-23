@@ -14,7 +14,6 @@
         .logo-img img { width: 60px; height: auto; }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 
-        /* 利用規約 */
         .terms-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555; line-height: 1.6; }
         .terms-box h3 { margin-top: 0; color: #333; font-size: 15px; }
         .terms-content { height: 100px; overflow-y: scroll; border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px; }
@@ -44,8 +43,8 @@
         .anchor { color: #0000ee; text-decoration: underline; cursor: pointer; }
 
         .reaction-bar { display: flex; gap: 8px; margin-top: 10px; }
-        .reaction-btn { background: #f8f9fa; border: 1px solid #eee; border-radius: 15px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
-        .reaction-btn:hover { background: #e9ecef; }
+        .reaction-btn { background: #f8f9fa; border: 1px solid #eee; border-radius: 15px; padding: 4px 10px; font-size: 12px; cursor: pointer; user-select: none; }
+        .reaction-btn:active { background: #ddd; }
 
         .post-footer { font-size: 11px; color: #aaa; margin-top: 8px; }
         .ap-key { background: #eee; color: #666; padding: 1px 4px; border-radius: 3px; font-family: monospace; margin-right: 8px; }
@@ -57,9 +56,6 @@
 <header id="header-part">
     <h1 class="logo-text">e ちゃんねる</h1>
     <div class="sub-title">掲示板一覧</div>
-    <div class="logo-img">
-        <img src="https://firebasestorage.googleapis.com/v0/b/soulkin-aa3b7.appspot.com/o/system%2Flogo_tv.png?alt=media" alt="logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/716/716429.png'">
-    </div>
 </header>
 
 <div class="container" id="top-view">
@@ -69,10 +65,9 @@
             1. 投稿された内容の著作権は管理者に帰属するものとします。<br>
             2. 他者への誹謗中傷、不適切画像の投稿、荒らし行為を固く禁じます。<br>
             3. 規約違反が確認された場合、管理者の判断で投稿の削除、およびアクセス制限（BAN）を行います。<br>
-            4. <span class="terms-important">荒らし行為等、運営を妨害するユーザーについては、管理者の判断で識別情報（IPアドレス等）を公開・提供する場合があります。</span><br>
+            4. 荒らし行為等、運営を妨害するユーザーについては、管理者の判断で識別情報（IPアドレス等）を公開・提供する場合があります。<br>
             5. 本サービス利用により生じたトラブルについて、管理者は一切の責任を負いません。
         </div>
-        <div style="font-size: 11px;">※掲示板の作成、および投稿をもって本規約に同意したものとみなします。</div>
     </div>
     <button class="btn-create" onclick="createNewBoard()">規約に同意して掲示板を作成する</button>
     <div class="board-grid" id="board-list"></div>
@@ -85,7 +80,7 @@
     <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="previewImage(this)">
     <img id="preview-area" class="img-preview">
     <div class="btn-group">
-        <button class="btn-green" id="send-btn" onclick="sendPost()">投稿</button>
+        <button class="btn-green" onclick="sendPost()">投稿</button>
         <button class="btn-green" style="background-color: #666;" onclick="document.getElementById('image-input').click()">画像選択</button>
         <button class="btn-green" style="background-color: #999;" onclick="location.reload()">戻る</button>
     </div>
@@ -169,7 +164,6 @@
     window.openBoard = (id, title) => {
         currentBoardId = id;
         document.getElementById('top-view').style.display = 'none';
-        document.getElementById('header-part').style.display = 'none';
         document.getElementById('bbs-view').style.display = 'block';
         document.getElementById('current-board-title').innerText = title;
 
@@ -190,9 +184,9 @@
                     <div class="post-text">${parseAnchor(sanitize(m.text))}</div>
                     ${m.imageUrl ? `<img src="${m.imageUrl}" class="post-img" onclick="window.open('${m.imageUrl}')">` : ''}
                     <div class="reaction-bar">
-                        <button class="reaction-btn" onclick="react('${d.id}', 'kusa')">😂 ${m.kusa || 0}</button>
-                        <button class="reaction-btn" onclick="react('${d.id}', 'good')">👍 ${m.good || 0}</button>
-                        <button class="reaction-btn" onclick="react('${d.id}', 'kami')">😲 ${m.kami || 0}</button>
+                        <button class="reaction-btn" onclick="handleReact('${d.id}', 'kusa')">😂 ${m.kusa || 0}</button>
+                        <button class="reaction-btn" onclick="handleReact('${d.id}', 'good')">👍 ${m.good || 0}</button>
+                        <button class="reaction-btn" onclick="handleReact('${d.id}', 'kami')">😲 ${m.kami || 0}</button>
                     </div>
                     <div class="post-footer">
                         ${new Date(m.timestamp).toLocaleString()} | Key: <span class="ap-key">${apKey}</span>
@@ -205,13 +199,10 @@
         });
     };
 
-    window.react = async (mId, type) => {
+    // ★リアクション処理の確実化
+    window.handleReact = async (mId, type) => {
         const ref = doc(db, `boards/${currentBoardId}/messages`, mId);
-        try {
-            await updateDoc(ref, { [type]: increment(1) });
-        } catch (e) {
-            console.error("Reaction failed", e);
-        }
+        await updateDoc(ref, { [type]: increment(1) }).catch(err => console.error("Update error", err));
     };
 
     window.sendPost = async () => {
@@ -220,8 +211,10 @@
         if (!txt && !compressedImageData) return;
         localStorage.setItem('e_chan_name', name);
         const now = Date.now();
+        // ★投稿時に必ず初期値を数値(0)で作成
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
-            username: name, text: txt, timestamp: now, uid: myId, imageUrl: compressedImageData, kusa:0, good:0, kami:0
+            username: name, text: txt, timestamp: now, uid: myId, imageUrl: compressedImageData, 
+            kusa: 0, good: 0, kami: 0
         });
         await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
         document.getElementById('content').value = '';
