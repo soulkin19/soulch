@@ -14,10 +14,13 @@
         .logo-img img { width: 60px; height: auto; }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 
-        .terms-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555; line-height: 1.6; }
+        .terms-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; color: #555; line-height: 1.6; }
         .terms-box h3 { margin-top: 0; color: #333; font-size: 15px; }
         .terms-content { height: 100px; overflow-y: scroll; border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px; }
         .terms-important { color: #d9534f; font-weight: bold; }
+
+        /* 追加：アカウント登録ボタンのスタイル */
+        .btn-reg { background-color: #337ab7; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; margin-bottom: 20px; font-weight: bold; width: 100%; display: block; text-decoration: none; text-align: center; box-sizing: border-box; }
 
         .btn-create { background-color: var(--e-green); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; margin-bottom: 25px; font-weight: bold; width: 100%; }
         
@@ -71,6 +74,8 @@
             6. 掲示板への書き込み、掲示板の作成を行った時点でこの規約に同意したものとします。
         </div>
     </div>
+    <a href="https://soulkin19.github.io/login/" class="btn-reg">無料でアカウント登録</a>
+
     <button class="btn-create" onclick="createNewBoard()">規約に同意して掲示板を作成する</button>
     <div class="board-grid" id="board-list"></div>
 </div>
@@ -145,11 +150,13 @@
                 if (width > height) { if (width > max) { height *= max / width; width = max; } }
                 else { if (height > max) { width *= max / height; height = max; } }
                 canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                compressedImageData = canvas.toDataURL('image/jpeg', 0.6);
-                document.getElementById('preview-area').src = compressedImageData;
-                document.getElementById('preview-area').style.display = 'block';
+                const ctx = canvas.width > 0 ? canvas.getContext('2d') : null;
+                if(ctx) {
+                    ctx.drawImage(img, 0, 0, width, height);
+                    compressedImageData = canvas.toDataURL('image/jpeg', 0.6);
+                    document.getElementById('preview-area').src = compressedImageData;
+                    document.getElementById('preview-area').style.display = 'block';
+                }
             };
             img.src = e.target.result;
         };
@@ -263,14 +270,13 @@
     window.createNewBoard = async () => {
         const t = prompt("掲示板名:");
         if (t) {
-            // ログインしている時だけ「限定にするか」を選択できる
             let isPriv = false;
+            // ログインしている場合のみ選択可能
             if(loginUser) {
                 isPriv = confirm("ログインユーザー限定の部屋にしますか？");
-            } else {
-                alert("ログインしていないため、一般公開の掲示板として作成します。");
             }
             
+            // ログインしていない場合は即座に作成される
             await addDoc(collection(db, 'boards'), { 
                 title: t, 
                 lastUpdated: Date.now(),
