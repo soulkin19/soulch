@@ -26,6 +26,8 @@
         .board-title { font-size: 16px; color: var(--e-purple); font-weight: bold; margin-bottom: 8px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .post-count { font-size: 12px; color: #888; text-decoration: underline; }
         .board-del { position: absolute; top: 8px; right: 8px; color: #ddd; font-size: 18px; cursor: pointer; border: none; background: none; }
+        /* 鍵マーク用 */
+        .lock-icon { margin-right: 5px; }
 
         #bbs-view { display: none; background: white; padding: 20px; }
         #current-board-title { font-size: 24px; color: var(--e-purple); font-weight: bold; margin-bottom: 20px; border-left: 5px solid var(--e-green); padding-left: 10px; }
@@ -106,6 +108,9 @@
     const sanitize = (str) => str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     const parseAnchor = (text) => text.replace(/&gt;&gt;(\d+)/g, '<span class="anchor" onclick="document.getElementById(\'post-$1\').scrollIntoView({behavior:\'smooth\'})">>>$1</span>');
 
+    // ユーザーポータルのログイン確認
+    const loginUser = localStorage.getItem("loginnow");
+
     const myId = (() => {
         let id = localStorage.getItem('fp');
         if (!id) { id = 'fp_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('fp', id); }
@@ -113,13 +118,22 @@
     })();
 
     let currentBoardId = '';
+    let currentBoardIsPrivate = false; // 現在の部屋が限定かどうか
     let compressedImageData = '';
     let unsubscribeMessages = null;
 
     (async () => {
         const blackSnap = await getDoc(doc(db, 'blacklist', myId));
         if (blackSnap.exists() && blackSnap.data().type === 'perm') location.href = "https://soulkin19.github.io/soulch_ura";
-        document.getElementById('username').value = localStorage.getItem('e_chan_name') || "名無しさん";
+        
+        // ログインしていれば名前を固定、していなければ前回の名前
+        if(loginUser) {
+            document.getElementById('username').value = loginUser;
+            document.getElementById('username').readOnly = true;
+            document.getElementById('username').style.background = "#eee";
+        } else {
+            document.getElementById('username').value = localStorage.getItem('e_chan_name') || "名無しさん";
+        }
     })();
 
     window.previewImage = (input) => {
@@ -152,21 +166,37 @@
             const b = d.data();
             const card = document.createElement('div');
             card.className = 'board-card';
-            card.onclick = (e) => { if(e.target.className !== 'board-del') openBoard(d.id, b.title); };
+            card.onclick = (e) => { 
+                if(e.target.className !== 'board-del') {
+                    if(b.isPrivate && !loginUser) {
+                        alert("この部屋はログインユーザー限定です。");
+                        return;
+                    }
+                    openBoard(d.id, b.title, b.isPrivate); 
+                }
+            };
             onSnapshot(collection(db, `boards/${d.id}/messages`), (mSnap) => {
                 card.innerHTML = `<button class="board-del" onclick="deleteBoard('${d.id}')">×</button>
-                    <div class="board-title">${sanitize(b.title)}</div>
+                    <div class="board-title">${b.isPrivate ? '<span class="lock-icon">🔒</span>' : ''}${sanitize(b.title)}</div>
                     <div class="post-count">投稿数: ${mSnap.size}</div>`;
             });
             list.appendChild(card);
         });
     });
 
-    window.openBoard = (id, title) => {
+    window.openBoard = (id, title, isPrivate) => {
         currentBoardId = id;
+        currentBoardIsPrivate = isPrivate;
         document.getElementById('top-view').style.display = 'none';
         document.getElementById('bbs-view').style.display = 'block';
         document.getElementById('current-board-title').innerText = title;
+
+        // 限定部屋の場合、名前欄をアカウント名に強制固定
+        if(isPrivate) {
+            document.getElementById('username').value = loginUser;
+            document.getElementById('username').readOnly = true;
+            document.getElementById('username').style.background = "#eee";
+        }
 
         if (unsubscribeMessages) unsubscribeMessages();
 
@@ -200,7 +230,6 @@
         });
     };
 
-    // ★リアクション処理の確実化
     window.handleReact = async (mId, type) => {
         const ref = doc(db, `boards/${currentBoardId}/messages`, mId);
         await updateDoc(ref, { [type]: increment(1) }).catch(err => console.error("Update error", err));
@@ -210,11 +239,15 @@
         const txt = document.getElementById('content').value;
         const name = document.getElementById('username').value;
         if (!txt && !compressedImageData) return;
-        localStorage.setItem('e_chan_name', name);
+        
+        // 限定部屋なら名前の偽装を防止
+        const finalName = currentBoardIsPrivate ? loginUser : name;
+
+        if(!currentBoardIsPrivate) localStorage.setItem('e_chan_name', finalName);
+
         const now = Date.now();
-        // ★投稿時に必ず初期値を数値(0)で作成
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
-            username: name, text: txt, timestamp: now, uid: myId, imageUrl: compressedImageData, 
+            username: finalName, text: txt, timestamp: now, uid: myId, imageUrl: compressedImageData, 
             kusa: 0, good: 0, kami: 0
         });
         await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
@@ -234,7 +267,14 @@
 
     window.createNewBoard = async () => {
         const t = prompt("掲示板名:");
-        if (t) await addDoc(collection(db, 'boards'), { title: t, lastUpdated: Date.now() });
+        if (t) {
+            const isPriv = confirm("ログインユーザー限定の部屋にしますか？");
+            await addDoc(collection(db, 'boards'), { 
+                title: t, 
+                lastUpdated: Date.now(),
+                isPrivate: isPriv 
+            });
+        }
     };
 
     window.deleteBoard = async (id) => {
