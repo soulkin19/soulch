@@ -155,7 +155,7 @@
             card.className = 'board-card';
             card.onclick = (e) => { if(e.target.className !== 'board-del') openBoard(d.id, b.title); };
             onSnapshot(collection(db, `boards/${d.id}/messages`), (mSnap) => {
-                card.innerHTML = `<button class="board-del" onclick="deleteBoard('${d.id}')">×</button>
+                card.innerHTML = `<button class="board-del" onclick="deleteBoard('${d.id}')"><span class="material-icons">clear</span></button>
                     <div class="board-title">${sanitize(b.title)}</div>
                     <div class="post-count">投稿数: ${mSnap.size}</div>`;
             });
@@ -192,7 +192,7 @@
                     </div>
                     <div class="post-footer">
                         ${new Date(m.timestamp).toLocaleString()} | Key: <span class="ap-key">${apKey}</span>
-                        <span class="admin-del" onclick="admin('${d.id}', '${m.uid}')">[管理]</span>
+                        <span class="admin-del" onclick="admin('${d.id}', '${m.uid}')"><span class="material-icons" style="font-size:12px;">admin_panel_settings</span>管理</span>
                     </div>
                 `;
                 container.prepend(div);
