@@ -14,7 +14,6 @@
         .logo-img img { width: 60px; height: auto; }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 
-        /* 利用規約のスタイル */
         .terms-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555; line-height: 1.6; }
         .terms-box h3 { margin-top: 0; color: #333; font-size: 15px; }
         .terms-content { height: 100px; overflow-y: scroll; border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px; }
@@ -69,7 +68,7 @@
 </div>
 
 <div class="container" id="bbs-view">
-    <input type="text" id="username" class="form-input" value="名無しさん">
+    <input type="text" id="username" class="form-input" placeholder="名前">
     <textarea id="content" class="form-textarea" placeholder="内容を入力してください"></textarea>
     <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="previewImage(this)">
     <img id="preview-area" class="img-preview" style="display:none;">
@@ -109,7 +108,16 @@
     let currentBoardId = '';
     let compressedImageData = '';
 
-    // 自動転送チェック
+    // ★名前の保存と読み込み機能
+    const loadSavedName = () => {
+        const savedName = localStorage.getItem('e_chan_name');
+        if (savedName) {
+            document.getElementById('username').value = savedName;
+        } else {
+            document.getElementById('username').value = "名無しさん";
+        }
+    };
+
     async function initialAccessCheck() {
         const blackSnap = await getDoc(doc(db, 'blacklist', myId));
         if (blackSnap.exists()) {
@@ -118,6 +126,7 @@
                 location.href = "https://soulkin19.github.io/soulch_ura";
             }
         }
+        loadSavedName(); // アクセス時に名前を読み込む
     }
     initialAccessCheck();
 
@@ -191,6 +200,7 @@
         document.getElementById('top-view').style.display = 'none';
         document.getElementById('header-part').style.display = 'none';
         document.getElementById('bbs-view').style.display = 'block';
+        loadSavedName(); // スレッドを開いた時にも最新の保存名を反映
         const container = document.getElementById('message-container');
         onSnapshot(query(collection(db, `boards/${id}/messages`), orderBy('timestamp', 'desc')), (snap) => {
             container.innerHTML = '';
@@ -215,6 +225,10 @@
         const rawName = document.getElementById('username').value;
         if (!rawTxt && !compressedImageData) return;
         if (await checkBan()) return;
+        
+        // ★投稿時に名前を保存
+        localStorage.setItem('e_chan_name', rawName);
+
         const now = Date.now();
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
             username: rawName, text: rawTxt, timestamp: now, uid: myId, imageUrl: compressedImageData
