@@ -26,7 +26,6 @@
         .board-title { font-size: 16px; color: var(--e-purple); font-weight: bold; margin-bottom: 8px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .post-count { font-size: 12px; color: #888; text-decoration: underline; }
         .board-del { position: absolute; top: 8px; right: 8px; color: #ddd; font-size: 18px; cursor: pointer; border: none; background: none; }
-        /* 鍵マーク用 */
         .lock-icon { margin-right: 5px; }
 
         #bbs-view { display: none; background: white; padding: 20px; }
@@ -108,7 +107,6 @@
     const sanitize = (str) => str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     const parseAnchor = (text) => text.replace(/&gt;&gt;(\d+)/g, '<span class="anchor" onclick="document.getElementById(\'post-$1\').scrollIntoView({behavior:\'smooth\'})">>>$1</span>');
 
-    // ユーザーポータルのログイン確認
     const loginUser = localStorage.getItem("loginnow");
 
     const myId = (() => {
@@ -118,7 +116,7 @@
     })();
 
     let currentBoardId = '';
-    let currentBoardIsPrivate = false; // 現在の部屋が限定かどうか
+    let currentBoardIsPrivate = false;
     let compressedImageData = '';
     let unsubscribeMessages = null;
 
@@ -126,7 +124,6 @@
         const blackSnap = await getDoc(doc(db, 'blacklist', myId));
         if (blackSnap.exists() && blackSnap.data().type === 'perm') location.href = "https://soulkin19.github.io/soulch_ura";
         
-        // ログインしていれば名前を固定、していなければ前回の名前
         if(loginUser) {
             document.getElementById('username').value = loginUser;
             document.getElementById('username').readOnly = true;
@@ -191,7 +188,6 @@
         document.getElementById('bbs-view').style.display = 'block';
         document.getElementById('current-board-title').innerText = title;
 
-        // 限定部屋の場合、名前欄をアカウント名に強制固定
         if(isPrivate) {
             document.getElementById('username').value = loginUser;
             document.getElementById('username').readOnly = true;
@@ -240,7 +236,6 @@
         const name = document.getElementById('username').value;
         if (!txt && !compressedImageData) return;
         
-        // 限定部屋なら名前の偽装を防止
         const finalName = currentBoardIsPrivate ? loginUser : name;
 
         if(!currentBoardIsPrivate) localStorage.setItem('e_chan_name', finalName);
@@ -268,7 +263,14 @@
     window.createNewBoard = async () => {
         const t = prompt("掲示板名:");
         if (t) {
-            const isPriv = confirm("ログインユーザー限定の部屋にしますか？");
+            // ログインしている時だけ「限定にするか」を選択できる
+            let isPriv = false;
+            if(loginUser) {
+                isPriv = confirm("ログインユーザー限定の部屋にしますか？");
+            } else {
+                alert("ログインしていないため、一般公開の掲示板として作成します。");
+            }
+            
             await addDoc(collection(db, 'boards'), { 
                 title: t, 
                 lastUpdated: Date.now(),
