@@ -14,7 +14,7 @@
         .logo-img img { width: 60px; height: auto; }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 
-        /* 利用規約（元の内容・スタイルに戻しました） */
+        /* 利用規約 */
         .terms-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555; line-height: 1.6; }
         .terms-box h3 { margin-top: 0; color: #333; font-size: 15px; }
         .terms-content { height: 100px; overflow-y: scroll; border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px; }
@@ -45,6 +45,7 @@
 
         .reaction-bar { display: flex; gap: 8px; margin-top: 10px; }
         .reaction-btn { background: #f8f9fa; border: 1px solid #eee; border-radius: 15px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+        .reaction-btn:hover { background: #e9ecef; }
 
         .post-footer { font-size: 11px; color: #aaa; margin-top: 8px; }
         .ap-key { background: #eee; color: #666; padding: 1px 4px; border-radius: 3px; font-family: monospace; margin-right: 8px; }
@@ -84,7 +85,7 @@
     <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="previewImage(this)">
     <img id="preview-area" class="img-preview">
     <div class="btn-group">
-        <button class="btn-green" id="send-btn">投稿</button>
+        <button class="btn-green" id="send-btn" onclick="sendPost()">投稿</button>
         <button class="btn-green" style="background-color: #666;" onclick="document.getElementById('image-input').click()">画像選択</button>
         <button class="btn-green" style="background-color: #999;" onclick="location.reload()">戻る</button>
     </div>
@@ -117,6 +118,7 @@
 
     let currentBoardId = '';
     let compressedImageData = '';
+    let unsubscribeMessages = null;
 
     (async () => {
         const blackSnap = await getDoc(doc(db, 'blacklist', myId));
@@ -171,7 +173,9 @@
         document.getElementById('bbs-view').style.display = 'block';
         document.getElementById('current-board-title').innerText = title;
 
-        onSnapshot(query(collection(db, `boards/${id}/messages`), orderBy('timestamp', 'asc')), (snap) => {
+        if (unsubscribeMessages) unsubscribeMessages();
+
+        unsubscribeMessages = onSnapshot(query(collection(db, `boards/${id}/messages`), orderBy('timestamp', 'asc')), (snap) => {
             const container = document.getElementById('message-container');
             container.innerHTML = '';
             let count = 1;
@@ -203,10 +207,14 @@
 
     window.react = async (mId, type) => {
         const ref = doc(db, `boards/${currentBoardId}/messages`, mId);
-        await updateDoc(ref, { [type]: increment(1) });
+        try {
+            await updateDoc(ref, { [type]: increment(1) });
+        } catch (e) {
+            console.error("Reaction failed", e);
+        }
     };
 
-    document.getElementById('send-btn').onclick = async () => {
+    window.sendPost = async () => {
         const txt = document.getElementById('content').value;
         const name = document.getElementById('username').value;
         if (!txt && !compressedImageData) return;
@@ -215,7 +223,7 @@
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
             username: name, text: txt, timestamp: now, uid: myId, imageUrl: compressedImageData, kusa:0, good:0, kami:0
         });
-        await updateDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now });
+        await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
         document.getElementById('content').value = '';
         document.getElementById('preview-area').style.display = 'none';
         compressedImageData = '';
