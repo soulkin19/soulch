@@ -10,37 +10,47 @@
         header { padding: 40px 20px 20px; text-align: center; }
         .logo-text { font-size: 42px; color: var(--e-green); font-weight: bold; margin: 0; }
         .sub-title { font-size: 20px; color: var(--e-green); margin: 20px 0; font-weight: bold; }
+        .logo-img { width: 80px; height: 80px; margin: 10px auto; background-color: #e3f2fd; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+        .logo-img img { width: 60px; height: auto; }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 
-        /* 利用規約 */
-        .terms-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 12px; color: #666; }
-        .terms-content { height: 60px; overflow-y: auto; margin-bottom: 5px; }
+        /* 利用規約（復活） */
+        .terms-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555; line-height: 1.6; }
+        .terms-box h3 { margin-top: 0; color: #333; font-size: 15px; }
+        .terms-content { height: 100px; overflow-y: scroll; border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px; }
+        .terms-important { color: #d9534f; font-weight: bold; }
 
-        .btn-create { background-color: var(--e-green); color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; cursor: pointer; margin-bottom: 25px; font-weight: bold; width: 100%; }
+        .btn-create { background-color: var(--e-green); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; margin-bottom: 25px; font-weight: bold; width: 100%; }
         
         .board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-        .board-card { background: white; border: 1px solid #eee; border-radius: 8px; padding: 15px; cursor: pointer; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .board-title { font-size: 16px; color: var(--e-purple); font-weight: bold; }
-        
+        .board-card { background: white; border: 1px solid #eee; border-radius: 8px; padding: 15px; cursor: pointer; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left; }
+        .board-title { font-size: 16px; color: var(--e-purple); font-weight: bold; margin-bottom: 8px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .post-count { font-size: 12px; color: #888; text-decoration: underline; }
+        .board-del { position: absolute; top: 8px; right: 8px; color: #ddd; font-size: 18px; cursor: pointer; border: none; background: none; }
+
         #bbs-view { display: none; background: white; padding: 20px; }
-        .form-input { width: 100%; max-width: 200px; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; border-radius: 4px; }
-        .form-textarea { width: 100%; border: 1px solid #ccc; padding: 10px; border-radius: 4px; height: 100px; box-sizing: border-box; }
+        .form-input { width: 100%; max-width: 200px; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+        .form-textarea { width: 100%; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 4px; height: 120px; box-sizing: border-box; }
+        .img-preview { max-width: 100px; margin-bottom: 10px; border: 1px solid #ddd; display: none; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 30px; }
+        .btn-green { background-color: var(--e-green); color: white; border: none; padding: 10px 25px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         
         /* 投稿アイテム */
-        .post-item { border-bottom: 1px solid #f0f0f0; padding: 15px 0; position: relative; }
-        .post-header { display: flex; justify-content: space-between; font-size: 13px; }
-        .post-user { font-weight: bold; color: var(--e-purple); }
-        .post-text { margin: 8px 0; white-space: pre-wrap; line-height: 1.5; }
+        .post-item { border-bottom: 1px solid #f0f0f0; padding: 15px 0; }
+        .post-user { font-weight: bold; color: #444; }
+        .post-text { margin-top: 5px; white-space: pre-wrap; word-wrap: break-word; }
+        .post-img { max-width: 150px; border-radius: 4px; margin-top: 10px; border: 1px solid #eee; cursor: pointer; }
+        .post-time { font-size: 11px; color: #aaa; margin-top: 5px; }
         .anchor { color: #0000ee; text-decoration: underline; cursor: pointer; }
-        
-        /* リアクション */
-        .reaction-bar { display: flex; gap: 8px; margin-top: 8px; }
-        .reaction-btn { background: #f0f0f0; border: 1px solid #ddd; border-radius: 12px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
-        .reaction-btn:hover { background: #e0e0e0; }
 
-        /* アクセスポイントキー & 管理 */
-        .post-footer { font-size: 11px; color: #999; margin-top: 8px; display: flex; align-items: center; gap: 10px; }
-        .ap-key { color: #555; background: #eee; padding: 0 4px; border-radius: 3px; font-family: monospace; }
+        /* リアクション */
+        .reaction-bar { display: flex; gap: 8px; margin-top: 10px; }
+        .reaction-btn { background: #f8f9fa; border: 1px solid #eee; border-radius: 15px; padding: 4px 10px; font-size: 12px; cursor: pointer; transition: 0.2s; }
+        .reaction-btn:hover { background: #e9ecef; }
+
+        /* 管理・APキー（アクセスポイントキー） */
+        .post-admin-row { font-size: 11px; color: #aaa; margin-top: 8px; }
+        .ap-key { background: #eee; color: #666; padding: 1px 4px; border-radius: 3px; font-family: monospace; margin-right: 8px; }
         .admin-del { cursor: pointer; text-decoration: underline; }
     </style>
 </head>
@@ -49,25 +59,36 @@
 <header id="header-part">
     <h1 class="logo-text">e ちゃんねる</h1>
     <div class="sub-title">掲示板一覧</div>
+    <div class="logo-img">
+        <img src="https://firebasestorage.googleapis.com/v0/b/soulkin-aa3b7.appspot.com/o/system%2Flogo_tv.png?alt=media" alt="logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/716/716429.png'">
+    </div>
 </header>
 
 <div class="container" id="top-view">
     <div class="terms-box">
-        <h3>利用規約</h3>
+        <h3>利用規約・ガイドライン</h3>
         <div class="terms-content">
-            誹謗中傷、荒らし行為を禁じます。規約違反者は管理者の判断でBAN、および識別情報(IPアドレス等)を公開する場合があります。
+            1. 投稿された内容の著作権は管理者に帰属するものとします。<br>
+            2. 他者への誹謗中傷、不適切画像の投稿、荒らし行為を固く禁じます。<br>
+            3. 規約違反が確認された場合、管理者の判断で投稿の削除、およびアクセス制限（BAN）を行います。<br>
+            4. <span class="terms-important">荒らし行為等、運営を妨害するユーザーについては、管理者の判断で識別情報（IPアドレス等）を公開・提供する場合があります。</span><br>
+            5. 本サービス利用により生じたトラブルについて、管理者は一切の責任を負いません。
         </div>
+        <div style="font-size: 11px;">※掲示板の作成、および投稿をもって本規約に同意したものとみなします。</div>
     </div>
-    <button class="btn-create" onclick="createNewBoard()">掲示板を作成する</button>
+    <button class="btn-create" onclick="createNewBoard()">規約に同意して掲示板を作成する</button>
     <div class="board-grid" id="board-list"></div>
 </div>
 
 <div class="container" id="bbs-view">
     <input type="text" id="username" class="form-input" placeholder="名前">
-    <textarea id="content" class="form-textarea" placeholder="内容を入力してください... >>1 でアンカー"></textarea>
-    <div style="margin: 10px 0;">
-        <button class="btn-green" id="send-btn" style="background:var(--e-green); color:white; border:none; padding:8px 20px; border-radius:4px; cursor:pointer;">投稿</button>
-        <button onclick="location.reload()" style="padding:8px; border-radius:4px; border:1px solid #ccc; cursor:pointer; margin-left:10px;">戻る</button>
+    <textarea id="content" class="form-textarea" placeholder="内容を入力してください（>>1 でアンカー）"></textarea>
+    <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="previewImage(this)">
+    <img id="preview-area" class="img-preview">
+    <div class="btn-group">
+        <button class="btn-green" id="send-btn">投稿</button>
+        <button class="btn-green" style="background-color: #666;" onclick="document.getElementById('image-input').click()">画像選択</button>
+        <button class="btn-green" style="background-color: #999;" onclick="location.reload()">戻る</button>
     </div>
     <div id="message-container"></div>
 </div>
@@ -88,21 +109,18 @@
     const ADMIN_PASS = "ZGVsdGE0Mzc="; 
 
     const sanitize = (str) => str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    
-    // アンカーをリンク化する関数
-    const parseAnchor = (text) => {
-        return text.replace(/&gt;&gt;(\d+)/g, '<span class="anchor" onclick="document.getElementById(\'post-$1\').scrollIntoView()">>>$1</span>');
-    };
+    const parseAnchor = (text) => text.replace(/&gt;&gt;(\d+)/g, '<span class="anchor" onclick="document.getElementById(\'post-$1\').scrollIntoView({behavior:\'smooth\'})">>>$1</span>');
 
-    const myId = (() => {
+    const getFp = () => {
         let id = localStorage.getItem('fp');
         if (!id) { id = 'fp_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('fp', id); }
         return id;
-    })();
-
+    };
+    const myId = getFp();
     let currentBoardId = '';
+    let compressedImageData = '';
 
-    // 初期チェック (BAN & 名前読み込み)
+    // 初期化
     (async () => {
         const blackSnap = await getDoc(doc(db, 'blacklist', myId));
         if (blackSnap.exists() && blackSnap.data().type === 'perm') {
@@ -111,15 +129,46 @@
         document.getElementById('username').value = localStorage.getItem('e_chan_name') || "名無しさん";
     })();
 
-    // 掲示板一覧
+    // 画像プレビュー
+    window.previewImage = (input) => {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width, height = img.height, max = 300;
+                if (width > height) { if (width > max) { height *= max / width; width = max; } }
+                else { if (height > max) { width *= max / height; height = max; } }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                compressedImageData = canvas.toDataURL('image/jpeg', 0.6);
+                document.getElementById('preview-area').src = compressedImageData;
+                document.getElementById('preview-area').style.display = 'block';
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // 掲示板一覧（レス数復活）
     onSnapshot(query(collection(db, 'boards'), orderBy('lastUpdated', 'desc')), (snap) => {
         const list = document.getElementById('board-list');
         list.innerHTML = '';
         snap.forEach(d => {
+            const b = d.data();
             const card = document.createElement('div');
             card.className = 'board-card';
-            card.innerHTML = `<div class="board-title">${sanitize(d.data().title)}</div>`;
-            card.onclick = () => openBoard(d.id);
+            card.onclick = (e) => { if(e.target.className !== 'board-del') openBoard(d.id); };
+            onSnapshot(collection(db, `boards/${d.id}/messages`), (mSnap) => {
+                card.innerHTML = `
+                    <button class="board-del" onclick="deleteBoard('${d.id}')">×</button>
+                    <div class="board-title">${sanitize(b.title)}</div>
+                    <div class="post-count">投稿数: ${mSnap.size}</div>
+                `;
+            });
             list.appendChild(card);
         });
     });
@@ -129,7 +178,6 @@
         document.getElementById('top-view').style.display = 'none';
         document.getElementById('header-part').style.display = 'none';
         document.getElementById('bbs-view').style.display = 'block';
-        
         onSnapshot(query(collection(db, `boards/${id}/messages`), orderBy('timestamp', 'asc')), (snap) => {
             const container = document.getElementById('message-container');
             container.innerHTML = '';
@@ -139,25 +187,23 @@
                 const div = document.createElement('div');
                 div.className = 'post-item';
                 div.id = `post-${count}`;
-                const shortId = m.uid ? m.uid.slice(-4).toUpperCase() : '????'; // APキー
-                
+                const apKey = m.uid ? m.uid.slice(-4).toUpperCase() : '????';
                 div.innerHTML = `
-                    <div class="post-header">
-                        <span class="post-user">${count}: ${sanitize(m.username)}</span>
-                        <span>${new Date(m.timestamp).toLocaleString()}</span>
-                    </div>
+                    <div class="post-user">${count}: ${sanitize(m.username)}</div>
                     <div class="post-text">${parseAnchor(sanitize(m.text))}</div>
+                    ${m.imageUrl ? `<img src="${m.imageUrl}" class="post-img" onclick="window.open('${m.imageUrl}')">` : ''}
                     <div class="reaction-bar">
                         <button class="reaction-btn" onclick="react('${d.id}', 'kusa')">😂 ${m.kusa || 0}</button>
                         <button class="reaction-btn" onclick="react('${d.id}', 'good')">👍 ${m.good || 0}</button>
                         <button class="reaction-btn" onclick="react('${d.id}', 'kami')">😲 ${m.kami || 0}</button>
                     </div>
-                    <div class="post-footer">
-                        <span>ID: <span class="ap-key">${shortId}</span></span>
+                    <div class="post-admin-row">
+                        ${new Date(m.timestamp).toLocaleString()} 
+                        <span style="margin-left:15px;">Key: <span class="ap-key">${apKey}</span></span>
                         <span class="admin-del" onclick="admin('${d.id}', '${m.uid}')">[管理]</span>
                     </div>
                 `;
-                container.prepend(div); // 新しい順に表示
+                container.prepend(div);
                 count++;
             });
         });
@@ -171,28 +217,38 @@
     document.getElementById('send-btn').onclick = async () => {
         const txt = document.getElementById('content').value;
         const name = document.getElementById('username').value;
-        if (!txt) return;
+        if (!txt && !compressedImageData) return;
         localStorage.setItem('e_chan_name', name);
         const now = Date.now();
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
-            username: name, text: txt, timestamp: now, uid: myId, kusa:0, good:0, kami:0
+            username: name, text: txt, timestamp: now, uid: myId, 
+            imageUrl: compressedImageData, kusa: 0, good: 0, kami: 0
         });
-        await updateDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now });
+        await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
         document.getElementById('content').value = '';
+        document.getElementById('preview-area').style.display = 'none';
+        compressedImageData = '';
     };
 
     window.admin = async (mId, uId) => {
         const p = prompt("PASS:");
         if (p && btoa(p) === ADMIN_PASS) {
-            const a = prompt("1:消去 2:永久BAN");
+            const a = prompt("1:消去 2:永久BAN 3:24h");
             if (a === "1") await deleteDoc(doc(db, `boards/${currentBoardId}/messages`, mId));
             else if (a === "2") await setDoc(doc(db, 'blacklist', uId), { type: 'perm' });
+            else if (a === "3") await setDoc(doc(db, 'blacklist', uId), { type: 'temp', until: Date.now() + (24*60*60*1000) });
         }
     };
 
     window.createNewBoard = async () => {
         const t = prompt("掲示板名:");
-        if (t) await addDoc(collection(db, 'boards'), { title: t, lastUpdated: Date.now() });
+        if (t) await addDoc(collection(db, 'boards'), { title: t, lastUpdated: Date.now(), ownerId: myId });
+    };
+
+    window.deleteBoard = async (id) => {
+        event.stopPropagation();
+        const p = prompt("削除パスワード:");
+        if (p && btoa(p) === ADMIN_PASS) await deleteDoc(doc(db, 'boards', id));
     };
 </script>
 </body>
