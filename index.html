@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>e ちゃんねる</title>
     <style>
-        :root { --e-green: #5cb85c; --e-purple: #4b0082; --bg-light-green: #f4f9f4; }
+        :root { --e-green: #5cb85c; --e-purple: #4b0082; }
         html, body { margin: 0; padding: 0; background-color: white; min-height: 100vh; font-family: sans-serif; }
         header { padding: 40px 20px 20px; text-align: center; }
         .logo-text { font-size: 42px; color: var(--e-green); font-weight: bold; margin: 0; }
@@ -14,7 +14,7 @@
         .logo-img img { width: 60px; height: auto; }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 
-        /* 利用規約（復活） */
+        /* 利用規約（元の内容・スタイルに戻しました） */
         .terms-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555; line-height: 1.6; }
         .terms-box h3 { margin-top: 0; color: #333; font-size: 15px; }
         .terms-content { height: 100px; overflow-y: scroll; border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px; }
@@ -29,13 +29,13 @@
         .board-del { position: absolute; top: 8px; right: 8px; color: #ddd; font-size: 18px; cursor: pointer; border: none; background: none; }
 
         #bbs-view { display: none; background: white; padding: 20px; }
+        #current-board-title { font-size: 24px; color: var(--e-purple); font-weight: bold; margin-bottom: 20px; border-left: 5px solid var(--e-green); padding-left: 10px; }
         .form-input { width: 100%; max-width: 200px; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
         .form-textarea { width: 100%; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 4px; height: 120px; box-sizing: border-box; }
         .img-preview { max-width: 100px; margin-bottom: 10px; border: 1px solid #ddd; display: none; }
         .btn-group { display: flex; gap: 10px; margin-bottom: 30px; }
         .btn-green { background-color: var(--e-green); color: white; border: none; padding: 10px 25px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         
-        /* 投稿アイテム */
         .post-item { border-bottom: 1px solid #f0f0f0; padding: 15px 0; }
         .post-user { font-weight: bold; color: #444; }
         .post-text { margin-top: 5px; white-space: pre-wrap; word-wrap: break-word; }
@@ -43,13 +43,10 @@
         .post-time { font-size: 11px; color: #aaa; margin-top: 5px; }
         .anchor { color: #0000ee; text-decoration: underline; cursor: pointer; }
 
-        /* リアクション */
         .reaction-bar { display: flex; gap: 8px; margin-top: 10px; }
-        .reaction-btn { background: #f8f9fa; border: 1px solid #eee; border-radius: 15px; padding: 4px 10px; font-size: 12px; cursor: pointer; transition: 0.2s; }
-        .reaction-btn:hover { background: #e9ecef; }
+        .reaction-btn { background: #f8f9fa; border: 1px solid #eee; border-radius: 15px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
 
-        /* 管理・APキー（アクセスポイントキー） */
-        .post-admin-row { font-size: 11px; color: #aaa; margin-top: 8px; }
+        .post-footer { font-size: 11px; color: #aaa; margin-top: 8px; }
         .ap-key { background: #eee; color: #666; padding: 1px 4px; border-radius: 3px; font-family: monospace; margin-right: 8px; }
         .admin-del { cursor: pointer; text-decoration: underline; }
     </style>
@@ -81,6 +78,7 @@
 </div>
 
 <div class="container" id="bbs-view">
+    <div id="current-board-title"></div>
     <input type="text" id="username" class="form-input" placeholder="名前">
     <textarea id="content" class="form-textarea" placeholder="内容を入力してください（>>1 でアンカー）"></textarea>
     <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="previewImage(this)">
@@ -111,25 +109,21 @@
     const sanitize = (str) => str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     const parseAnchor = (text) => text.replace(/&gt;&gt;(\d+)/g, '<span class="anchor" onclick="document.getElementById(\'post-$1\').scrollIntoView({behavior:\'smooth\'})">>>$1</span>');
 
-    const getFp = () => {
+    const myId = (() => {
         let id = localStorage.getItem('fp');
         if (!id) { id = 'fp_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('fp', id); }
         return id;
-    };
-    const myId = getFp();
+    })();
+
     let currentBoardId = '';
     let compressedImageData = '';
 
-    // 初期化
     (async () => {
         const blackSnap = await getDoc(doc(db, 'blacklist', myId));
-        if (blackSnap.exists() && blackSnap.data().type === 'perm') {
-            location.href = "https://soulkin19.github.io/soulch_ura";
-        }
+        if (blackSnap.exists() && blackSnap.data().type === 'perm') location.href = "https://soulkin19.github.io/soulch_ura";
         document.getElementById('username').value = localStorage.getItem('e_chan_name') || "名無しさん";
     })();
 
-    // 画像プレビュー
     window.previewImage = (input) => {
         const file = input.files[0];
         if (!file) return;
@@ -153,7 +147,6 @@
         reader.readAsDataURL(file);
     };
 
-    // 掲示板一覧（レス数復活）
     onSnapshot(query(collection(db, 'boards'), orderBy('lastUpdated', 'desc')), (snap) => {
         const list = document.getElementById('board-list');
         list.innerHTML = '';
@@ -161,23 +154,23 @@
             const b = d.data();
             const card = document.createElement('div');
             card.className = 'board-card';
-            card.onclick = (e) => { if(e.target.className !== 'board-del') openBoard(d.id); };
+            card.onclick = (e) => { if(e.target.className !== 'board-del') openBoard(d.id, b.title); };
             onSnapshot(collection(db, `boards/${d.id}/messages`), (mSnap) => {
-                card.innerHTML = `
-                    <button class="board-del" onclick="deleteBoard('${d.id}')">×</button>
+                card.innerHTML = `<button class="board-del" onclick="deleteBoard('${d.id}')">×</button>
                     <div class="board-title">${sanitize(b.title)}</div>
-                    <div class="post-count">投稿数: ${mSnap.size}</div>
-                `;
+                    <div class="post-count">投稿数: ${mSnap.size}</div>`;
             });
             list.appendChild(card);
         });
     });
 
-    window.openBoard = (id) => {
+    window.openBoard = (id, title) => {
         currentBoardId = id;
         document.getElementById('top-view').style.display = 'none';
         document.getElementById('header-part').style.display = 'none';
         document.getElementById('bbs-view').style.display = 'block';
+        document.getElementById('current-board-title').innerText = title;
+
         onSnapshot(query(collection(db, `boards/${id}/messages`), orderBy('timestamp', 'asc')), (snap) => {
             const container = document.getElementById('message-container');
             container.innerHTML = '';
@@ -197,9 +190,8 @@
                         <button class="reaction-btn" onclick="react('${d.id}', 'good')">👍 ${m.good || 0}</button>
                         <button class="reaction-btn" onclick="react('${d.id}', 'kami')">😲 ${m.kami || 0}</button>
                     </div>
-                    <div class="post-admin-row">
-                        ${new Date(m.timestamp).toLocaleString()} 
-                        <span style="margin-left:15px;">Key: <span class="ap-key">${apKey}</span></span>
+                    <div class="post-footer">
+                        ${new Date(m.timestamp).toLocaleString()} | Key: <span class="ap-key">${apKey}</span>
                         <span class="admin-del" onclick="admin('${d.id}', '${m.uid}')">[管理]</span>
                     </div>
                 `;
@@ -221,10 +213,9 @@
         localStorage.setItem('e_chan_name', name);
         const now = Date.now();
         await addDoc(collection(db, `boards/${currentBoardId}/messages`), {
-            username: name, text: txt, timestamp: now, uid: myId, 
-            imageUrl: compressedImageData, kusa: 0, good: 0, kami: 0
+            username: name, text: txt, timestamp: now, uid: myId, imageUrl: compressedImageData, kusa:0, good:0, kami:0
         });
-        await setDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now }, { merge: true });
+        await updateDoc(doc(db, 'boards', currentBoardId), { lastUpdated: now });
         document.getElementById('content').value = '';
         document.getElementById('preview-area').style.display = 'none';
         compressedImageData = '';
@@ -233,16 +224,15 @@
     window.admin = async (mId, uId) => {
         const p = prompt("PASS:");
         if (p && btoa(p) === ADMIN_PASS) {
-            const a = prompt("1:消去 2:永久BAN 3:24h");
+            const a = prompt("1:消去 2:永久BAN");
             if (a === "1") await deleteDoc(doc(db, `boards/${currentBoardId}/messages`, mId));
             else if (a === "2") await setDoc(doc(db, 'blacklist', uId), { type: 'perm' });
-            else if (a === "3") await setDoc(doc(db, 'blacklist', uId), { type: 'temp', until: Date.now() + (24*60*60*1000) });
         }
     };
 
     window.createNewBoard = async () => {
         const t = prompt("掲示板名:");
-        if (t) await addDoc(collection(db, 'boards'), { title: t, lastUpdated: Date.now(), ownerId: myId });
+        if (t) await addDoc(collection(db, 'boards'), { title: t, lastUpdated: Date.now() });
     };
 
     window.deleteBoard = async (id) => {
