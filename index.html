@@ -16,10 +16,9 @@
 
         .terms-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; color: #555; line-height: 1.6; }
         .terms-box h3 { margin-top: 0; color: #333; font-size: 15px; }
-        .terms-content { height: 100px; overflow-y: scroll; border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px; }
+        .terms-content { height: 180px; overflow-y: scroll; border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px; }
         .terms-important { color: #d9534f; font-weight: bold; }
 
-        /* 追加：アカウント登録ボタンのスタイル */
         .btn-reg { background-color: #337ab7; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; margin-bottom: 20px; font-weight: bold; width: 100%; display: block; text-decoration: none; text-align: center; box-sizing: border-box; }
 
         .btn-create { background-color: var(--e-green); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; margin-bottom: 25px; font-weight: bold; width: 100%; }
@@ -64,8 +63,15 @@
 
 <div class="container" id="top-view">
     <div class="terms-box">
-        <h3>利用規約・ガイドライン</h3>
+        <h3>利用規約・ガイドライン ＆ 無料アカウント特典</h3>
         <div class="terms-content">
+            <strong>【アカウント登録（無料）でできること】</strong><br>
+            ・<b>限定部屋（🔒）の閲覧・投稿</b>：ログインユーザーのみが入室できる特別なコミュニティに参加できます。<br>
+            ・<b>本人証明の固定</b>：名前がアカウント名に固定され、なりすましを防止。信頼性の高いやり取りが可能です。<br>
+            ・<b>専用掲示板の作成</b>：掲示板作成時に「ログインユーザー限定」の設定を選択できるようになります。<br>
+            ・<b>今後のアップデート</b>：マイページ機能が実装済みです。また登録者限定の便利な機能を順次追加予定です。<br><br>
+            
+            <strong>【基本規約】</strong><br>
             1. 投稿された内容の著作権は管理者に帰属するものとします。<br>
             2. 他者への誹謗中傷、不適切画像の投稿、荒らし行為を固く禁じます。<br>
             3. 規約違反が確認された場合、管理者の判断で投稿の削除、およびアクセス制限（BAN）を行います。<br>
@@ -271,12 +277,10 @@
         const t = prompt("掲示板名:");
         if (t) {
             let isPriv = false;
-            // ログインしている場合のみ選択可能
             if(loginUser) {
                 isPriv = confirm("ログインユーザー限定の部屋にしますか？");
             }
             
-            // ログインしていない場合は即座に作成される
             await addDoc(collection(db, 'boards'), { 
                 title: t, 
                 lastUpdated: Date.now(),
