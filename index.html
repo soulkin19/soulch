@@ -133,7 +133,7 @@
 
     (async () => {
         const blackSnap = await getDoc(doc(db, 'blacklist', myId));
-        if (blackSnap.exists() && blackSnap.data().type === 'perm') location.href = "https://soulkin19.github.io/soulch_ura";
+        
         
         if(loginUser) {
             document.getElementById('username').value = loginUser;
